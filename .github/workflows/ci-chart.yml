@@ -1,0 +1,42 @@
+name: Publish Chart
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: read
+
+jobs:
+  publish-charts:
+    env:
+      HELM_CHART_DIR: charts/kdp-oam-operator
+
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
+
+      - name: Get Version
+        id: get_version
+        run: |
+          CHART_VERSION=${GITHUB_REF#refs/tags/}
+          echo "CHART_VERSION=${CHART_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Install Helm
+        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78
+        with:
+          version: v3.8.2
+
+      - name: Docker Login
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          username: ${{ secrets.REG_USER }}
+          password: ${{ secrets.REG_PASSWD }}
+
+      - name: Tag helm chart and push to registry
+        run: |
+          chart_version=${{ steps.get_version.outputs.CHART_VERSION }}
+          sed -i "s/v1.0.0/${chart_version}/g" $HELM_CHART_DIR/Chart.yaml
+          helm package ./charts/kdp-oam-operator
+          helm push kdp-oam-operator-chart-${chart_version}.tgz  oci://${{ secrets.CONTAINER_REGISTRY }}/linktimecloud

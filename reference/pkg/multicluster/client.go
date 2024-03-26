@@ -1,0 +1,233 @@
+/*
+Copyright 2023 KDP(Kubernetes Data Platform).
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package multicluster
+
+import (
+	"context"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"os"
+
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+// gatedClient use base client to handle hub cluster requests and
+// use gateway client to do managed cluster requests
+type gatedClient struct {
+	base    client.Client
+	gateway client.Client
+	writer  *gatedStatusWriter
+}
+
+func (m *gatedClient) GroupVersionKindFor(obj runtime.Object) (schema.GroupVersionKind, error) {
+	return obj.GetObjectKind().GroupVersionKind(), nil
+}
+
+func (m *gatedClient) IsObjectNamespaced(obj runtime.Object) (bool, error) {
+	return true, nil
+}
+
+// gatedStatusWriter use base writer to handle hub cluster requests and
+// use gateway writer to do managed cluster requests
+type gatedStatusWriter struct {
+	base    client.StatusWriter
+	gateway client.StatusWriter
+}
+
+// gatedSubResourceClient use base client to handle hub cluster requests and
+// use gateway client to do managed cluster requests
+type gatedSubResourceClient struct {
+	base    client.SubResourceClient
+	gateway client.SubResourceClient
+}
+
+var _ client.Client = &gatedClient{}
+var _ client.StatusWriter = &gatedStatusWriter{}
+var _ client.SubResourceClient = &gatedSubResourceClient{}
+
+func (m *gatedClient) getClientFor(ctx context.Context) client.Client {
+	if cluster, exists := ClusterFrom(ctx); !exists || IsLocal(cluster) {
+		return m.base
+	}
+	return m.gateway
+}
+
+func (m *gatedStatusWriter) getWriterFor(ctx context.Context) client.StatusWriter {
+	if cluster, exists := ClusterFrom(ctx); !exists || IsLocal(cluster) {
+		return m.base
+	}
+	return m.gateway
+}
+
+func (m *gatedSubResourceClient) getClientFor(ctx context.Context) client.SubResourceClient {
+	if cluster, exists := ClusterFrom(ctx); !exists || IsLocal(cluster) {
+		return m.base
+	}
+	return m.gateway
+}
+
+func (m *gatedClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+	return m.getClientFor(ctx).Get(ctx, key, obj, opts...)
+}
+
+func (m *gatedClient) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
+	return m.getClientFor(ctx).List(ctx, list, opts...)
+}
+
+func (m *gatedClient) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
+	return m.getClientFor(ctx).Create(ctx, obj, opts...)
+}
+
+func (m *gatedClient) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
+	return m.getClientFor(ctx).Delete(ctx, obj, opts...)
+}
+
+func (m *gatedClient) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+	return m.getClientFor(ctx).Update(ctx, obj, opts...)
+}
+
+func (m *gatedClient) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+	return m.getClientFor(ctx).Patch(ctx, obj, patch, opts...)
+}
+
+func (m *gatedClient) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
+	return m.getClientFor(ctx).DeleteAllOf(ctx, obj, opts...)
+}
+
+func (m *gatedClient) SubResource(subResource string) client.SubResourceClient {
+	return &gatedSubResourceClient{
+		base:    m.base.SubResource(subResource),
+		gateway: m.gateway.SubResource(subResource),
+	}
+}
+
+func (m *gatedClient) Status() client.StatusWriter {
+	return m.writer
+}
+
+func (m *gatedClient) Scheme() *runtime.Scheme {
+	return m.base.Scheme()
+}
+
+func (m *gatedClient) RESTMapper() meta.RESTMapper {
+	return m.base.RESTMapper()
+}
+
+func (m *gatedStatusWriter) Create(ctx context.Context, obj client.Object, subResource client.Object, opts ...client.SubResourceCreateOption) error {
+	return m.getWriterFor(ctx).Create(ctx, obj, subResource, opts...)
+}
+
+func (m *gatedStatusWriter) Update(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
+	return m.getWriterFor(ctx).Update(ctx, obj, opts...)
+}
+
+func (m *gatedStatusWriter) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.SubResourcePatchOption) error {
+	return m.getWriterFor(ctx).Patch(ctx, obj, patch, opts...)
+}
+
+func (m *gatedSubResourceClient) Get(ctx context.Context, obj client.Object, subResource client.Object, opts ...client.SubResourceGetOption) error {
+	return m.getClientFor(ctx).Get(ctx, obj, subResource, opts...)
+}
+
+func (m *gatedSubResourceClient) Create(ctx context.Context, obj client.Object, subResource client.Object, opts ...client.SubResourceCreateOption) error {
+	return m.getClientFor(ctx).Create(ctx, obj, subResource, opts...)
+}
+
+func (m *gatedSubResourceClient) Update(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
+	return m.getClientFor(ctx).Update(ctx, obj, opts...)
+}
+
+func (m *gatedSubResourceClient) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.SubResourcePatchOption) error {
+	return m.getClientFor(ctx).Patch(ctx, obj, patch, opts...)
+}
+
+// ClientOptions the options for creating multi-cluster gatedClient
+type ClientOptions struct {
+	client.Options
+	ClusterGateway             ClusterGatewayClientOptions
+	DisableRemoteClusterClient bool
+}
+
+// ClusterGatewayClientOptions the options for creating the gateway client
+type ClusterGatewayClientOptions struct {
+	// URL the url for cluster-gateway. If empty, multi-cluster request will use
+	// the Kubernetes aggregated api.
+	URL string
+	// CAFile the CA file for cluster-gateway. If neither ClusterGatewayURL nor
+	// ClusterGatewayCAFile is empty, the CA file will be used when accessing
+	// cluster-gateway.
+	CAFile string
+}
+
+// NewClient create a multi-cluster client for handling multi-cluster requests
+// If ClusterGatewayURL is not set, the client will use the Kubernetes
+// aggregated api directly. All multi-cluster requests will be directed to
+// the hub Kubernetes APIServer. The managed cluster requests will be redirected
+// from the Kubernetes APIServer to cluster-gateway.
+// If ClusterGatewayURL is set, the client will directly call cluster-gateway
+// for managed cluster requests, instead of calling the hub Kubernetes
+// APIServer.
+func NewClient(config *rest.Config, options ClientOptions) (client.Client, error) {
+	wrapped := rest.CopyConfig(config)
+	wrapped.Wrap(NewTransportWrapper())
+	constructor := NewRemoteClusterClient
+	if options.DisableRemoteClusterClient {
+		constructor = client.New
+	}
+	if len(options.ClusterGateway.URL) == 0 {
+		return constructor(wrapped, options.Options)
+	}
+	base, err := constructor(config, options.Options)
+	if err != nil {
+		return nil, err
+	}
+	wrapped.Host = options.ClusterGateway.URL
+	if len(options.ClusterGateway.CAFile) > 0 {
+		if wrapped.CAData, err = os.ReadFile(options.ClusterGateway.CAFile); err != nil {
+			return nil, err
+		}
+	} else {
+		wrapped.CAData = nil
+		wrapped.Insecure = true
+	}
+	gateway, err := constructor(wrapped, options.Options)
+	if err != nil {
+		return nil, err
+	}
+	return &gatedClient{
+		base:    base,
+		gateway: gateway,
+		writer: &gatedStatusWriter{
+			base:    base.Status(),
+			gateway: gateway.Status(),
+		},
+	}, nil
+}
+
+// DefaultClusterGatewayClientOptions the default ClusterGatewayClientOptions
+var DefaultClusterGatewayClientOptions = ClusterGatewayClientOptions{}
+
+// NewDefaultClient create default client with default DefaultClusterGatewayClientOptions
+func NewDefaultClient(config *rest.Config, options client.Options) (client.Client, error) {
+	return NewClient(config, ClientOptions{
+		Options:                    options,
+		ClusterGateway:             DefaultClusterGatewayClientOptions,
+		DisableRemoteClusterClient: DefaultDisableRemoteClusterClient,
+	})
+}

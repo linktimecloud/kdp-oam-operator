@@ -4,14 +4,9 @@
 name: CI-Build
 
 on:
-  push:
-    branches:
-      - main
-      - release-*
-  pull_request:
-    branches:
-      - main
-      - release-*
+  release:
+    types:
+      - published
 
 jobs:
   build-docker-images:
@@ -19,28 +14,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get the version
+      - name: Get Short SHA
+        id: slug
+        run: echo "git_revision=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Get Version
         id: get_version
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
+          if [[ "${{ github.ref_name }}" =~ ^[.\|v][0-9]{1,}.[0-9]{1,}[.\|-][0-9]{1,} ]];then
+            VERSION=${{ github.ref_name }}
+          else
+            VERSION="latest"
+          fi
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Get image registry
-        id: get_image_registry
+
+      - name: Docker Login
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          username: ${{ secrets.REG_USER }}
+          password: ${{ secrets.REG_PASSWD }}
+
+      - name: Build Images
         run: |
-          echo "IMG_REGISTRY=${{ secrets.NX_ALIYUN_REGISTRY }}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.ref_name }}" =~ ^[.\|v][0-9]{1,}.[0-9]{1,}[.\|-][0-9]{1,} ]];then
+            GIT_VERSION=${{ github.ref_name }}
+          else:
+            GIT_VERSION=${{ steps.slug.outputs.git_revision }}
+          fi
+          make docker-build IMG_REGISTRY=${{ secrets.CONTAINER_REGISTRY }} VERSION=${{ steps.get_version.outputs.VERSION }}
 
-#      - name: Docker Login
-#        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
-#        with:
-#          registry: ${{ secrets.NX_ALIYUN_REGISTRY }}
-#          username: ${{ secrets.NX_ALIYUN_USERNAME }}
-#          password: ${{ secrets.NX_ALIYUN_PASSWORD }}
-
-#      - name: Build Images
-#        run: make docker-build-apiserver IMG_REGISTRY=${{ steps.get_image_registry.outputs.IMG_REGISTRY }} VERSION=${{ steps.get_version.outputs.VERSION }}
-#
-#      - name: Push Images
-#        run: make docker-push-apiserver IMG_REGISTRY=${{ steps.get_image_registry.outputs.IMG_REGISTRY }} VERSION=${{ steps.get_version.outputs.VERSION }}
-
-
+      - name: Push Images
+        run: make docker-push IMG_REGISTRY=${{ secrets.CONTAINER_REGISTRY }} VERSION=${{ steps.get_version.outputs.VERSION }}

@@ -1,0 +1,149 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.13.0
+  name: xdefinitions.bdc.kdp.io
+spec:
+  group: bdc.kdp.io
+  names:
+    kind: XDefinition
+    listKind: XDefinitionList
+    plural: xdefinitions
+    singular: xdefinition
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.schemaConfigMapRefNamespace
+      name: SchemaConfigMapRefNamespace
+      type: string
+    - jsonPath: .status.schemaConfigMapRef
+      name: SchemaConfigMapRef
+      type: string
+    - jsonPath: .spec.apiResource.definition.apiVersion
+      name: RelatedResourceAPIVersion
+      type: string
+    - jsonPath: .spec.apiResource.definition.kind
+      name: RelatedResourceKind
+      type: string
+    - jsonPath: .spec.apiResource.definition.type
+      name: RelatedResourceType
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: XDefinition is the Schema for the xdefinitions API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: XDefinitionSpec defines the desired state of XDefinition
+            properties:
+              apiResource:
+                properties:
+                  definition:
+                    properties:
+                      apiVersion:
+                        type: string
+                      kind:
+                        type: string
+                      type:
+                        type: string
+                    required:
+                    - apiVersion
+                    - kind
+                    type: object
+                required:
+                - definition
+                type: object
+              dynamicParameterMeta:
+                items:
+                  properties:
+                    description:
+                      type: string
+                    name:
+                      type: string
+                    refKey:
+                      type: string
+                    refType:
+                      type: string
+                    required:
+                      type: boolean
+                    type:
+                      type: string
+                  required:
+                  - description
+                  - name
+                  - refKey
+                  - refType
+                  - required
+                  - type
+                  type: object
+                type: array
+              schematic:
+                description: Schematic defines the data format and template of the
+                  encapsulation of the definition. Only CUE schematic is supported
+                  for now.
+                properties:
+                  cue:
+                    properties:
+                      template:
+                        description: Template defines the abstraction template data
+                          of the capability, it will replace the old CUE template
+                          in extension field. Template is a required field if CUE
+                          is defined in Capability Definition.
+                        type: string
+                    required:
+                    - template
+                    type: object
+                type: object
+              status:
+                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                  Important: Run "make" to regenerate code after modifying this file
+                  Status defines the custom health policy and status message for workload'
+                properties:
+                  customStatus:
+                    description: CustomStatus defines the custom status message that
+                      could display to user
+                    type: string
+                  healthPolicy:
+                    description: HealthPolicy defines the health check policy for
+                      the abstraction
+                    type: string
+                type: object
+            required:
+            - apiResource
+            - schematic
+            type: object
+          status:
+            description: XDefinitionStatus defines the observed state of XDefinition
+            properties:
+              schemaConfigMapRef:
+                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                  of cluster Important: Run "make" to regenerate code after modifying
+                  this file'
+                type: string
+              schemaConfigMapRefNamespace:
+                type: string
+            required:
+            - schemaConfigMapRef
+            - schemaConfigMapRefNamespace
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

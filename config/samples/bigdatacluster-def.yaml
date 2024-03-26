@@ -1,0 +1,46 @@
+apiVersion: bdc.kdp.io/v1alpha1
+kind: XDefinition
+metadata:
+  annotations:
+    definition.bdc.kdp.io/description: Init namespace for bigdatacluster instance
+  name: bigdatacluster-def
+spec:
+  apiResource:
+    definition:
+      apiVersion: bdc.kdp.io/v1alpha1
+      kind: BigDataCluster
+  schematic:
+    cue:
+      template: |
+        output: {
+            apiVersion: "v1"
+            kind:       "Namespace"
+            metadata: {
+                name: parameter.namespaces[0].name
+                annotations: "bdc.kdp.io/name": context.name
+            }
+        }
+        outputs: {
+            for i, v in parameter.namespaces {
+                if i > 0 {
+                    "objects-\(i)": {
+                        apiVersion: "v1"
+                        kind:       "Namespace"
+                        metadata: {
+                            name: v.name
+                            annotations: "bdc.kdp.io/name": context.bdcName
+                        }
+                    }
+                }
+            }
+        }
+
+        parameter: {
+            frozen?:   *false | bool
+            disabled?: *false | bool
+            namespaces: [...{
+                name:      string
+                isDefault: bool
+            },
+            ]
+        }

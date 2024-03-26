@@ -1,0 +1,17 @@
+{{- if .Values.controller.metricService.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kdp-oam-operator.fullname" . }}-controller-metrics
+  labels:
+  {{- include "kdp-oam-operator.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.apiserver.service.type }}
+  ports:
+    - port: {{ .Values.controller.metricService.port }}
+      targetPort: {{ .Values.controller.metricService.port }}
+      protocol: TCP
+      name: http
+  selector:
+  {{- include "kdp-oam-operator.selectorLabels" . | nindent 4 }}
+{{- end }}

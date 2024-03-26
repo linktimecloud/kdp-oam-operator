@@ -1,0 +1,1763 @@
+{
+	"swagger": "2.0",
+	"info": {
+		"description": "kdp-oam-apiserver api doc",
+		"title": "kdp-oam-apiserver api doc",
+		"contact": {
+			"name": "kdp-oam-apiserver"
+		},
+		"license": {
+			"name": "Apache License 2.0"
+		},
+		"version": "v1"
+	},
+	"paths": {
+		"/api/v1/applications": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application"
+				],
+				"summary": "list objects of kind bdc application",
+				"operationId": "listApplications",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bigdata cluster",
+						"name": "bdcName",
+						"in": "query"
+					},
+					{
+						"type": "string",
+						"description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+						"name": "labelSelector",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ListApplicationsResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/applications/{appName}": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application"
+				],
+				"summary": "read the specified bdc application",
+				"operationId": "getApplication",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.GetApplicationsResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			},
+			"put": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application"
+				],
+				"summary": "update bdc application",
+				"operationId": "updateApplication",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/types.UpdateApplicationRequestModel"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.HTTPResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					}
+				}
+			},
+			"delete": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application"
+				],
+				"summary": "delete the specified bdc application",
+				"operationId": "deleteApplication",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.HTTPResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/applications/{appName}/detail": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application_resources"
+				],
+				"summary": "read the specified bdc application detail specification",
+				"operationId": "detailApplication",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ApplicationResourceResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/applications/{appName}/pods": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application_resources"
+				],
+				"summary": "query application applied pods",
+				"operationId": "getApplicationPods",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ApplicationResourcesListResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/applications/{appName}/pods/{podName}": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application_resources"
+				],
+				"summary": "query application pods detail info",
+				"operationId": "getApplicationPodsDetail",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "name of the bdc application pod",
+						"name": "podName",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ApplicationResourceResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			},
+			"delete": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application_resources"
+				],
+				"summary": "delete the specified bdc application pod",
+				"operationId": "deleteApplicationPod",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "name of the bdc application pod",
+						"name": "podName",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ApplicationResourceResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/applications/{appName}/pods/{podName}/containers/{containerName}/logs": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application_resources"
+				],
+				"summary": "query application applied pods container logs",
+				"operationId": "getApplicationPodLogs",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "name of the bdc application pod",
+						"name": "podName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "name of the bdc application pod container",
+						"name": "containerName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"type": "integer",
+						"description": "number of tail container logs",
+						"name": "tailLines",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ApplicationResourceResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/applications/{appName}/resources/detail": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application_resources"
+				],
+				"summary": "query application resource detail spec",
+				"operationId": "getApplicationResourceDetail",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "namespace of the kubernetes resource",
+						"name": "resNs",
+						"in": "query",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "name of the kubernetes resource",
+						"name": "resName",
+						"in": "query",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "kind of the kubernetes resource",
+						"name": "resKind",
+						"in": "query",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "apiVersion of the kubernetes resource",
+						"name": "resAPIVersion",
+						"in": "query",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ApplicationResourceResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/applications/{appName}/resources/topology": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application_resources"
+				],
+				"summary": "query applications resource overview",
+				"operationId": "getApplicationResourceTopology",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ApplicationResourceResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/applications/{appName}/serviceEndpoints": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application_resources"
+				],
+				"summary": "query application service endpoints",
+				"operationId": "getApplicationServiceEndpoints",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc application",
+						"name": "appName",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ApplicationResourcesListResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/bigdataclusters": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"bigdatacluster"
+				],
+				"summary": "list objects of kind bdc",
+				"operationId": "listBigDataClusters",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+						"name": "labelSelector",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ListBigDataClustersResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/bigdataclusters/{bdcName}": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"bigdatacluster"
+				],
+				"summary": "get the specified bdc",
+				"operationId": "getBigDataCluster",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bigdata cluster",
+						"name": "bdcName",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.GetBigDataClusterResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/bigdataclusters/{bdcName}/applications": {
+			"post": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application"
+				],
+				"summary": "create bdc application",
+				"operationId": "createApplication",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bigdata cluster",
+						"name": "bdcName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"name": "body",
+						"in": "body",
+						"required": true,
+						"schema": {
+							"$ref": "#/definitions/types.CreateApplicationRequestModel"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.GetApplicationsResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/bigdataclusters/{bdcName}/applications/definitions/{defType}/schema": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"application"
+				],
+				"summary": "read bdc application definition schema",
+				"operationId": "getApplicationDefinitionSchema",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bigdata cluster",
+						"name": "bdcName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "name of the bdc application definition type",
+						"name": "defType",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.GetXDefinitionResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/bigdataclusters/{bdcName}/contextsecrets/definitions/{defType}/schema": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"contextsecret"
+				],
+				"summary": "read bdc context secret definition schema",
+				"operationId": "getContextSecretDefinitionSchema",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bigdata cluster",
+						"name": "bdcName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "name of the bdc context secret definition type",
+						"name": "defType",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.GetContextSecretDefSchemaResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/bigdataclusters/{bdcName}/contextsettings/definitions/{defType}/schema": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"contextsetting"
+				],
+				"summary": "read bdc context setting definition schema",
+				"operationId": "getContextSettingDefinitionSchema",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bigdata cluster",
+						"name": "bdcName",
+						"in": "path",
+						"required": true
+					},
+					{
+						"type": "string",
+						"description": "name of the bdc context setting definition type",
+						"name": "defType",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.GetContextSettingDefSchemaResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/contextsecrets": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"contextsecret"
+				],
+				"summary": "list objects of kind bdc context secret",
+				"operationId": "listContextSecrets",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bigdata cluster",
+						"name": "bdcName",
+						"in": "query"
+					},
+					{
+						"type": "string",
+						"description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+						"name": "labelSelector",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ListContextSecretsResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/contextsecrets/{name}": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"contextsecret"
+				],
+				"summary": "read the specified bdc context secret",
+				"operationId": "getContextSecret",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc context secret",
+						"name": "name",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.GetContextSecretResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/contextsettings": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"contextsetting"
+				],
+				"summary": "list objects of kind bdc context setting",
+				"operationId": "listContextSettings",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bigdata cluster",
+						"name": "bdcName",
+						"in": "query"
+					},
+					{
+						"type": "string",
+						"description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+						"name": "labelSelector",
+						"in": "query"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.ListContextSettingsResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/api/v1/contextsettings/{name}": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/xml"
+				],
+				"produces": [
+					"application/json",
+					"application/xml"
+				],
+				"tags": [
+					"contextsetting"
+				],
+				"summary": "read the specified bdc context setting",
+				"operationId": "getContextSetting",
+				"parameters": [
+					{
+						"type": "string",
+						"description": "name of the bdc context setting",
+						"name": "name",
+						"in": "path",
+						"required": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"schema": {
+							"$ref": "#/definitions/types.GetContextSettingResponse"
+						}
+					},
+					"400": {
+						"description": "Bad request",
+						"schema": {
+							"$ref": "#/definitions/types.BadRequestResponse"
+						}
+					},
+					"404": {
+						"description": "Not found",
+						"schema": {
+							"$ref": "#/definitions/types.NotFoundResponse"
+						}
+					}
+				}
+			}
+		},
+		"/healthz": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/json"
+				],
+				"produces": [
+					"application/json",
+					"application/json"
+				],
+				"operationId": "probe",
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		},
+		"/readyz": {
+			"get": {
+				"consumes": [
+					"application/json",
+					"application/json"
+				],
+				"produces": [
+					"application/json",
+					"application/json"
+				],
+				"operationId": "probe",
+				"responses": {
+					"200": {
+						"description": "OK"
+					}
+				}
+			}
+		}
+	},
+	"definitions": {
+		"types.ApplicationBase": {
+			"required": [
+				"name",
+				"appFormName",
+				"appTemplateType",
+				"appRuntimeName",
+				"appRuntimeNs",
+				"bdc",
+				"properties",
+				"createTime",
+				"updateTime",
+				"status"
+			],
+			"properties": {
+				"annotations": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				},
+				"appFormName": {
+					"type": "string"
+				},
+				"appRuntimeName": {
+					"type": "string"
+				},
+				"appRuntimeNs": {
+					"type": "string"
+				},
+				"appTemplateType": {
+					"type": "string"
+				},
+				"bdc": {
+					"$ref": "#/definitions/types.BigDataClusterBase"
+				},
+				"createTime": {
+					"type": "string"
+				},
+				"labels": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				},
+				"name": {
+					"type": "string"
+				},
+				"properties": {
+					"type": "string"
+				},
+				"status": {
+					"type": "string"
+				},
+				"updateTime": {
+					"type": "string"
+				}
+			}
+		},
+		"types.ApplicationResourceResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"type": "object"
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.ApplicationResourcesListResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/types.ApplicationResourcesListResponse.data"
+					}
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.ApplicationResourcesListResponse.data": {
+			"type": "object"
+		},
+		"types.ApplicationSpecPropertiesMap": {
+			"required": [
+				"properties"
+			],
+			"properties": {
+				"properties": {
+					"type": "object"
+				}
+			}
+		},
+		"types.BadRequestResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"$ref": "#/definitions/types.BadRequestResponse.data"
+				},
+				"message": {
+					"type": "string",
+					"default": "bad request"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32",
+					"default": 1
+				}
+			}
+		},
+		"types.BadRequestResponse.data": {},
+		"types.BigDataClusterBase": {
+			"required": [
+				"name",
+				"defaultNS",
+				"alias",
+				"description",
+				"orgName",
+				"status",
+				"createTime",
+				"updateTime"
+			],
+			"properties": {
+				"alias": {
+					"type": "string"
+				},
+				"annotations": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				},
+				"createTime": {
+					"type": "string"
+				},
+				"defaultNS": {
+					"type": "string"
+				},
+				"description": {
+					"type": "string"
+				},
+				"labels": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				},
+				"name": {
+					"type": "string"
+				},
+				"orgName": {
+					"type": "string"
+				},
+				"status": {
+					"type": "string"
+				},
+				"updateTime": {
+					"type": "string"
+				}
+			}
+		},
+		"types.ContextSecretBase": {
+			"required": [
+				"name",
+				"metaName",
+				"origin",
+				"type",
+				"bdc",
+				"properties",
+				"createTime",
+				"updateTime",
+				"status"
+			],
+			"properties": {
+				"annotations": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				},
+				"bdc": {
+					"$ref": "#/definitions/types.BigDataClusterBase"
+				},
+				"createTime": {
+					"type": "string"
+				},
+				"labels": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				},
+				"metaName": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"origin": {
+					"type": "string"
+				},
+				"properties": {
+					"type": "string"
+				},
+				"status": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				},
+				"updateTime": {
+					"type": "string"
+				}
+			}
+		},
+		"types.ContextSettingBase": {
+			"required": [
+				"name",
+				"metaName",
+				"origin",
+				"type",
+				"bdc",
+				"properties",
+				"createTime",
+				"updateTime",
+				"status"
+			],
+			"properties": {
+				"annotations": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				},
+				"bdc": {
+					"$ref": "#/definitions/types.BigDataClusterBase"
+				},
+				"createTime": {
+					"type": "string"
+				},
+				"labels": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				},
+				"metaName": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"origin": {
+					"type": "string"
+				},
+				"properties": {
+					"type": "string"
+				},
+				"status": {
+					"type": "string"
+				},
+				"type": {
+					"type": "string"
+				},
+				"updateTime": {
+					"type": "string"
+				}
+			}
+		},
+		"types.CreateApplicationRequestModel": {
+			"required": [
+				"appFormName",
+				"appTemplateType",
+				"properties"
+			],
+			"properties": {
+				"appFormName": {
+					"type": "string"
+				},
+				"appTemplateType": {
+					"type": "string"
+				},
+				"properties": {
+					"type": "object"
+				}
+			}
+		},
+		"types.GetApplicationsResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"$ref": "#/definitions/types.ApplicationBase"
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.GetBigDataClusterResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"$ref": "#/definitions/types.BigDataClusterBase"
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.GetContextSecretDefSchemaResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"type": "string"
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.GetContextSecretResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"$ref": "#/definitions/types.ContextSecretBase"
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.GetContextSettingDefSchemaResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"type": "string"
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.GetContextSettingResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"$ref": "#/definitions/types.ContextSettingBase"
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.GetXDefinitionResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"$ref": "#/definitions/types.XDefinitionBase"
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.HTTPResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"$ref": "#/definitions/types.HTTPResponse.data"
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32",
+					"default": 0
+				}
+			}
+		},
+		"types.HTTPResponse.data": {},
+		"types.ListApplicationsResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/types.ApplicationBase"
+					}
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.ListBigDataClustersResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/types.BigDataClusterBase"
+					}
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.ListContextSecretsResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/types.ContextSecretBase"
+					}
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.ListContextSettingsResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/types.ContextSettingBase"
+					}
+				},
+				"message": {
+					"type": "string"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32"
+				}
+			}
+		},
+		"types.NotFoundResponse": {
+			"required": [
+				"data",
+				"message",
+				"status"
+			],
+			"properties": {
+				"data": {
+					"$ref": "#/definitions/types.NotFoundResponse.data"
+				},
+				"message": {
+					"type": "string",
+					"default": "not found"
+				},
+				"status": {
+					"type": "integer",
+					"format": "int32",
+					"default": 1
+				}
+			}
+		},
+		"types.NotFoundResponse.data": {},
+		"types.UpdateApplicationRequestModel": {
+			"required": [
+				"properties"
+			],
+			"properties": {
+				"properties": {
+					"type": "object"
+				}
+			}
+		},
+		"types.XDefinitionBase": {
+			"required": [
+				"name",
+				"description",
+				"schemaConfigMapRef",
+				"schemaConfigMapRefNamespace",
+				"JSONSchema",
+				"UISchema"
+			],
+			"properties": {
+				"JSONSchema": {
+					"type": "object"
+				},
+				"UISchema": {
+					"type": "object"
+				},
+				"description": {
+					"type": "string"
+				},
+				"name": {
+					"type": "string"
+				},
+				"schemaConfigMapRef": {
+					"type": "string"
+				},
+				"schemaConfigMapRefNamespace": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,95 @@
+apiVersion: bdc.kdp.io/v1alpha1
+kind: BigDataCluster
+metadata:
+  annotations:
+    "bdc.kdp.io/org": "bdctestorg"
+  labels:
+    app.kubernetes.io/name: bigdatacluster
+    app.kubernetes.io/instance: bigdatacluster-sample
+    app.kubernetes.io/part-of: kdp-oam-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: kdp-oam-operator
+  name: bdc-sample1
+spec:
+  # TODO(user): Add fields here
+  frozen: false                # 设置冻结
+  disabled: false              # 设置禁用
+  namespaces:
+    - name: ns-bdc-sample1   # 指定namespace的名称(由客户端按照一定规则生成)；实现context机制(使用context.name),为底层资源注入labels annotations等信息
+      isDefault: true           # 标识namespace是否默认的，namespaces列表中只有一个default
+---
+apiVersion: bdc.kdp.io/v1alpha1
+kind: BigDataCluster
+metadata:
+  annotations:
+    "bdc.kdp.io/org": "bdctestorg"
+  labels:
+    app.kubernetes.io/name: bigdatacluster
+    app.kubernetes.io/instance: bigdatacluster-sample
+    app.kubernetes.io/part-of: kdp-oam-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: kdp-oam-operator
+  name: bdc-sample2
+spec:
+  # TODO(user): Add fields here
+  frozen: false                # 设置冻结
+  disabled: false              # 设置禁用
+  namespaces:
+    - name: ns-bdc-sample2   # 指定namespace的名称(由客户端按照一定规则生成)；实现context机制(使用context.name),为底层资源注入labels annotations等信息
+      isDefault: true           # 标识namespace是否默认的，namespaces列表中只有一个default
+---
+apiVersion: bdc.kdp.io/v1alpha1
+kind: BigDataCluster
+metadata:
+  annotations:
+    "bdc.kdp.io/org": "bdctestorg"
+  labels:
+    app.kubernetes.io/name: bigdatacluster
+    app.kubernetes.io/instance: bigdatacluster-sample
+    app.kubernetes.io/part-of: kdp-oam-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: kdp-oam-operator
+  name: bdc-sample3
+spec:
+  # TODO(user): Add fields here
+  frozen: false                # 设置冻结
+  disabled: false              # 设置禁用
+  namespaces:
+    - name: ns-bdc-sample3   # 指定namespace的名称(由客户端按照一定规则生成)；实现context机制(使用context.name),为底层资源注入labels annotations等信息
+      isDefault: true           # 标识namespace是否默认的，namespaces列表中只有一个default
+---
+apiVersion: bdc.kdp.io/v1alpha1
+kind: BigDataCluster
+metadata:
+  labels:
+    app.kubernetes.io/name: bigdatacluster
+    app.kubernetes.io/instance: bigdatacluster-sample
+    app.kubernetes.io/part-of: kdp-oam-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: kdp-oam-operator
+  name: bdc-sample4
+spec:
+  # TODO(user): Add fields here
+  frozen: false                # 设置冻结
+  disabled: false              # 设置禁用
+  namespaces:
+    - name: ns-bdc-sample4   # 指定namespace的名称(由客户端按照一定规则生成)；实现context机制(使用context.name),为底层资源注入labels annotations等信息
+      isDefault: true           # 标识namespace是否默认的，namespaces列表中只有一个default
+---
+apiVersion: bdc.kdp.io/v1alpha1
+kind: BigDataCluster
+metadata:
+  labels:
+    app.kubernetes.io/name: bigdatacluster
+    app.kubernetes.io/instance: bigdatacluster-sample
+    app.kubernetes.io/part-of: kdp-oam-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: kdp-oam-operator
+  name: bdc-sample5
+spec:
+  # TODO(user): Add fields here
+  frozen: false                # 设置冻结
+  disabled: false              # 设置禁用
+  namespaces:
+    - name: ns-bdc-sample5   # 指定namespace的名称(由客户端按照一定规则生成)；实现context机制(使用context.name),为底层资源注入labels annotations等信息
+      isDefault: true           # 标识namespace是否默认的，namespaces列表中只有一个default

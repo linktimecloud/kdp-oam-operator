@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kdp-oam-operator.fullname" . }}-controller
+  labels:
+    {{- include "kdp-oam-operator.selectorLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.controller.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "kdp-oam-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "kdp-oam-operator.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.images.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "kdp-oam-operator.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-core
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.images.registry }}/{{ .Values.controller.image.repository }}:{{ default (include "kdp-oam-operator.defaultTag" .)  .Values.controller.image.tag }}"
+          imagePullPolicy: {{ .Values.images.pullPolicy }}
+          args:
+            - "--concurrent-reconciles={{ .Values.controller.args.concurrentReconciles }}"
+            - "--informer-sync-period={{ .Values.controller.args.reSyncPeriod }}"
+            - "--health-addr=:{{ .Values.controller.healthzService.port }}"
+            - "--system-default-namespace={{ .Values.systemNamespace.name }}"
+            - "--kdp-context-label-key={{ .Values.kdpContextLabel.key }}"
+            - "--kdp-context-label-value={{ .Values.kdpContextLabel.value }}"
+            {{ if .Values.controller.metricService.enabled }}
+            - "--metrics-addr=:{{ .Values.controller.metricService.port }}"
+            {{ end }}
+            {{ if .Values.admissionWebhooks.enabled }}
+            - "--webhook-enable=true"
+            - "--webhook-port={{ .Values.admissionWebhooks.service.port }}"
+            {{ end }}
+            {{- with .Values.controller.extraArgs }}
+              {{- toYaml . | nindent 10 }}
+            {{- end }}
+          env:
+          {{- with .Values.controller.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.controller.healthzService.port }}
+              name: healthz
+              protocol: TCP
+            {{ if .Values.controller.metricService.enabled }}
+            - containerPort: {{ .Values.controller.metricService.port}}
+              name: metrics
+              protocol: TCP
+            {{ end }}
+            {{ if .Values.admissionWebhooks.enabled }}
+            - containerPort: {{ .Values.admissionWebhooks.service.port }}
+              name: webhook-server
+              protocol: TCP
+            {{ end }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: healthz
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: healthz
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+          {{ if .Values.admissionWebhooks.enabled }}
+          - mountPath: {{ .Values.admissionWebhooks.certificate.mountPath }}
+            name: webhook-serving-cert
+            readOnly: true
+          {{- end }}
+          resources:
+            {{- toYaml .Values.controller.Resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{ if .Values.admissionWebhooks.enabled }}
+        - name: webhook-serving-cert
+          secret:
+            defaultMode: 420
+            secretName: {{ template "kdp-oam-operator.fullname" . }}-webhook-server-cert
+        {{- end }}
+---
+apiVersion: v1
+data:
+  controller_manager_config.yaml: |
+    apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
+    kind: ControllerManagerConfig
+    health:
+      healthProbeBindAddress: :{{ .Values.controller.healthzService.port }}
+    metrics:
+      bindAddress: 127.0.0.1:{{ .Values.controller.metricService.port}}
+    webhook:
+      port: {{ .Values.admissionWebhooks.service.port }}
+    leaderElection:
+      leaderElect: true
+      resourceName: 8cbd355e.kdp.io
+kind: ConfigMap
+metadata:
+  name: {{ template "kdp-oam-operator.fullname" . }}-controller-config
