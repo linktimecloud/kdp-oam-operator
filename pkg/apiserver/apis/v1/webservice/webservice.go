@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service
+package webservice
 
 import (
 	"kdp-oam-operator/pkg/apiserver/domain/service"

@@ -17,9 +17,17 @@ limitations under the License.
 package service
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/google/go-cmp/cmp"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	bdcv1alpha1 "kdp-oam-operator/api/bdc/v1alpha1"
 	"kdp-oam-operator/pkg/utils"
+	"os"
 	"reflect"
+	"sigs.k8s.io/yaml"
 	"testing"
 )
 
@@ -205,3 +213,46 @@ func TestRenderXDefinitionJSONSchem(t *testing.T) {
 		t.Errorf("Updated schema does not match expected schema.\nGot:\n%v\nExpected:\n%s", *updatedSchemaJSON, string(expectedSchemaJSON))
 	}
 }
+
+var _ = Describe("Test definition service function", func() {
+	var (
+		// testBDCName = "test-bdc"
+		testDefType = "test"
+	)
+
+	BeforeEach(func() {
+		InitTestEnv()
+	})
+
+	It("Test GetlDefinition function", func() {
+		By("prepare create application request: application definition")
+		// initDefinitions(kubeClient)
+		applicationDef, err := os.ReadFile("./testdata/application-def.yaml")
+		fmt.Printf("applicationDef: %+v", string(applicationDef))
+		Expect(err).Should(BeNil())
+		var def bdcv1alpha1.XDefinition
+		err = yaml.Unmarshal(applicationDef, &def)
+		Expect(err).Should(BeNil())
+		fmt.Printf("def: %+v", def)
+		Expect(kubeClient.Create(context.TODO(), &def))
+
+		By("list definition")
+		defList := new(bdcv1alpha1.XDefinitionList)
+		err = kubeClient.List(context.TODO(), defList)
+		Expect(err).Should(BeNil())
+		Expect(defList).ShouldNot(BeNil())
+		fmt.Printf("defList: %+v", defList.Items)
+
+		By("get application definition")
+		var selectDefinition *bdcv1alpha1.XDefinition
+		for _, item := range defList.Items {
+			if item.Spec.APIResource.Definition.Kind == "Application" && item.Spec.APIResource.Definition.Type == testDefType {
+				selectDefinition = &item
+			}
+		}
+		Expect(selectDefinition).ShouldNot(BeNil())
+		Expect(cmp.Diff(selectDefinition.Name, "application-test")).Should(BeEmpty())
+		Expect(selectDefinition.Spec.APIResource.Definition.Type).Should(Equal(testDefType))
+
+	})
+})
