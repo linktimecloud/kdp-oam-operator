@@ -1,0 +1,222 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "kdp-oam-operator.serviceAccountName" . }}
+  labels:
+    {{- include "kdp-oam-operator.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "kdp-oam-operator.fullname" . }}-leader-election-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+---
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "kdp-oam-operator.fullname" . }}-manager-role
+rules:
+  - apiGroups:
+      - "*"
+    resources:
+      - namespaces
+      - configmaps
+      - services
+      - secrets
+      - resourcequotas
+      - limitranges
+      - persistentvolumeclaims
+      - persistentvolumes
+      - serviceaccounts
+      - rolebindings
+      - roles
+      - applications
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - applications/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - applications/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - bigdataclusters
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - bigdataclusters/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - bigdataclusters/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - contextsecrets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - contextsecrets/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - contextsecrets/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - contextsettings
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - contextsettings/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - contextsettings/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - xdefinitions
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - xdefinitions/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - bdc.kdp.io
+    resources:
+      - xdefinitions/status
+    verbs:
+      - get
+      - patch
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "kdp-oam-operator.fullname" . }}-leader-election-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "kdp-oam-operator.fullname" . }}-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kdp-oam-operator.serviceAccountName" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "kdp-oam-operator.fullname" . }}-manager-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "kdp-oam-operator.fullname" . }}-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "kdp-oam-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

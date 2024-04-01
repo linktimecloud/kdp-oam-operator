@@ -1,0 +1,68 @@
+# Automatically generated file. Do not modify manually.
+apiVersion: bdc.kdp.io/v1alpha1
+kind: XDefinition
+metadata:
+  annotations:
+    definition.bdc.kdp.io/description: test application xdefinition
+  name: application-test
+spec:
+  apiResource:
+    definition:
+      apiVersion: bdc.kdp.io/v1alpha1
+      kind: Application
+      type: test
+  schematic:
+    cue:
+      template: |
+        output: {
+        	apiVersion: "core.oam.dev/v1beta1"
+        	kind:       "Application"
+        	metadata: {
+        		name:      context.name
+        		namespace: context.namespace
+        	}
+        	spec: {
+        		components: [
+        			{
+        				name: context.name
+        				type: "helm"
+        				properties: {
+        				  chart: "tomcat"
+                          repoType: "helm"
+                          url: parameter.url
+                          version: parameter.version
+                          values: {
+                            fullnameOverride: context.name
+                            persistence: {
+                              enabled: false
+                            }
+                            service: {
+                              type: "ClusterIP"
+                            }
+                            ingress: {
+                              enabled: true
+                              ingressClassName: "kong"
+                              hostname: "test-tomcat.test.com"
+                              extraTls: [
+                                {
+                                  hosts: ["test-tomcat.test.com"]
+                                  secretName: "test-tomcat.test.com"
+                                },
+                              ]
+                            }
+                          }
+        				}
+        			},
+        		]
+        	}
+        }
+        parameter: {
+          // +ui:description=Helm Chart 仓库 URL
+          // +ui:order=1
+          // +ui:options={"disabled":true}
+          url: string
+          // +ui:description=Helm Chart 版本
+          // +ui:order= 2
+          // +ui:options={"disabled":true}
+          version: string
+        }

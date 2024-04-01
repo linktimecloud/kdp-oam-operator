@@ -1,0 +1,20 @@
+{{- if and .Values.admissionWebhooks.enabled .Values.admissionWebhooks.patch.enabled .Values.rbac.create (not .Values.admissionWebhooks.certManager.enabled) }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name:  {{ template "kdp-oam-operator.fullname" . }}-webhook
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade,post-install,post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    app: {{ template "kdp-oam-operator.name" . }}-webhook
+    {{- include "kdp-oam-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "kdp-oam-operator.fullname" . }}-webhook
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "kdp-oam-operator.fullname" . }}-webhook
+    namespace: {{ .Release.Namespace }}
+{{- end }}

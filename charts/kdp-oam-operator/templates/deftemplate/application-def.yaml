@@ -1,0 +1,17 @@
+apiVersion: bdc.kdp.io/v1alpha1
+kind: XDefinition
+metadata:
+  name: application-def
+spec:
+  apiResource:
+    definition:
+      apiVersion: bdc.kdp.io/v1alpha1
+      kind: Application
+      type: default
+  schematic:
+    cue:
+      template: |
+        output: {
+          parameter
+        }
+        parameter: {}

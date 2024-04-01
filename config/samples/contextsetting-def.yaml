@@ -1,0 +1,31 @@
+apiVersion: bdc.kdp.io/v1alpha1
+kind: XDefinition
+metadata:
+  annotations:
+    definition.bdc.kdp.io/description: Init context setting resource
+  name: contextsetting-def
+spec:
+  apiResource:
+    definition:
+      apiVersion: bdc.kdp.io/v1alpha1
+      kind: ContextSetting
+  schematic:
+    cue:
+      template: |
+        output: {
+            apiVersion: "v1"
+            kind:       "ConfigMap"
+            metadata: {
+                name:      parameter.name
+                namespace: context.namespace
+                annotations: "bdc.kdp.io/name": context.bdcName
+            }
+            data: parameter.data
+        }
+
+        parameter: {
+            // Specify context setting name
+            name: string
+            // Specify context setting data
+            data: [string]: string | int | float
+        }

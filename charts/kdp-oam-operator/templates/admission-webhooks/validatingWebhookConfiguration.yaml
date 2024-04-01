@@ -1,0 +1,145 @@
+{{- if .Values.admissionWebhooks.enabled -}}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ template "kdp-oam-operator.fullname" . }}-webhook
+  namespace: {{ .Release.Namespace }}
+  {{- if .Values.admissionWebhooks.certManager.enabled }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ printf "%s/%s-serving-cert" .Release.Namespace (include "kdp-oam-operator.fullname" .) | quote }}
+  {{- end }}
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: {{ template "kdp-oam-operator.name" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /validate-bdc-kdp-io-v1alpha1-bigdatacluster
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
+    name: vbigdatacluster.kb.io
+    rules:
+      - apiGroups:
+          - bdc.kdp.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - UPDATE
+        resources:
+          - bigdataclusters
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: {{ template "kdp-oam-operator.name" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /validate-bdc-kdp-io-v1alpha1-contextsecret
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
+    name: vcontextsecret.kb.io
+    rules:
+      - apiGroups:
+          - bdc.kdp.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - UPDATE
+        resources:
+          - contextsecrets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: {{ template "kdp-oam-operator.name" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /validate-bdc-kdp-io-v1alpha1-contextsetting
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
+    name: vcontextsetting.kb.io
+    rules:
+      - apiGroups:
+          - bdc.kdp.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - UPDATE
+        resources:
+          - contextsettings
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: {{ template "kdp-oam-operator.name" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /validate-bdc-kdp-io-v1alpha1-customsecret
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
+    name: vcustomsecret.kb.io
+    rules:
+      - apiGroups:
+          - bdc.kdp.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - UPDATE
+        resources:
+          - customsecrets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: {{ template "kdp-oam-operator.name" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /validate-bdc-kdp-io-v1alpha1-customsetting
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
+    name: vcustomsetting.kb.io
+    rules:
+      - apiGroups:
+          - bdc.kdp.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - UPDATE
+        resources:
+          - customsettings
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: {{ template "kdp-oam-operator.name" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /validate-bdc-kdp-io-v1alpha1-orgresourcecontrol
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
+    name: vorgresourcecontrol.kb.io
+    rules:
+      - apiGroups:
+          - bdc.kdp.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - UPDATE
+        resources:
+          - orgresourcecontrols
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: {{ template "kdp-oam-operator.name" . }}-webhook
+        namespace: {{ .Release.Namespace }}
+        path: /validate-bdc-kdp-io-v1alpha1-resourcecontrol
+    failurePolicy: {{ .Values.admissionWebhooks.failurePolicy }}
+    name: vresourcecontrol.kb.io
+    rules:
+      - apiGroups:
+          - bdc.kdp.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - UPDATE
+        resources:
+          - resourcecontrols
+    sideEffects: None
+{{- end -}}

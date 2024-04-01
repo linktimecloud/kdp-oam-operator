@@ -1,0 +1,6 @@
+{{- if and .Values.systemNamespace.create -}}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Release.Namespace }}
+{{- end }}

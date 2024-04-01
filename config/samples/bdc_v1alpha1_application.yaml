@@ -1,0 +1,12 @@
+apiVersion: bdc.kdp.io/v1alpha1
+kind: Application
+metadata:
+  labels:
+    app.kubernetes.io/name: application
+    app.kubernetes.io/instance: application-sample
+    app.kubernetes.io/part-of: kdp-oam-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: kdp-oam-operator
+  name: application-sample
+spec:
+  # TODO(user): Add fields here
