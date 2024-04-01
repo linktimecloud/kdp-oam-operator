@@ -35,11 +35,11 @@ require (
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/fatih/color v1.15.0
 	github.com/gosuri/uitable v0.0.4
-	github.com/jellydator/ttlcache/v3 v3.0.1
+	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/kubevela/velaux v1.9.3
 	github.com/kubevela/workflow v0.6.0
 	github.com/kyokomi/emoji v2.2.4+incompatible
-	github.com/oam-dev/kubevela v1.9.7
+	github.com/oam-dev/kubevela v1.9.4
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apiserver v0.26.3
 	k8s.io/cli-runtime v0.26.3
