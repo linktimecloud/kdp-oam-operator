@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package types
+package dto
 
 import (
 	bdcv1alpha1 "kdp-oam-operator/api/bdc/v1alpha1"

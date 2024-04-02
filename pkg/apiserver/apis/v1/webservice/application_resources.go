@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service
+package webservice
 
 import (
 	v1dto "kdp-oam-operator/pkg/apiserver/apis/v1/dto"
