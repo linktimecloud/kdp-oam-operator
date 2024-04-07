@@ -39,15 +39,20 @@ func (c *BigDataClusterWebService) listContextSecrets(request *restful.Request, 
 			}
 		}
 	}
-	if bdcName != "" {
-		labels[constants.AnnotationBDCName] = bdcName
+	bdc, err := c.bigDataClusterMetaCacheParse(bdcName)
+	if err != nil {
+		exception.ReturnError(request, response, exception.ErrBigDataClusterNotFound)
+		return
+	}
+	if bdc.Name != "" {
+		labels[constants.AnnotationBDCName] = bdc.Name
 	}
 	ctxSecrets, err := c.ContextSecretService.ListContextSecrets(request.Request.Context(), v1dto.ListOptions{Labels: labels})
 	if err != nil {
 		exception.ReturnError(request, response, err)
 		return
 	}
-	var listRtn []*v1dto.ContextSecretBase
+	listRtn := make([]*v1dto.ContextSecretBase, 0)
 	for _, item := range ctxSecrets {
 		ctxSecretBase, err := assembler.ConvertContextSecretEntityToDTO(item)
 		if err != nil {

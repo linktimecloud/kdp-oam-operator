@@ -17,7 +17,7 @@ limitations under the License.
 package apiserver
 
 import (
-	webservice "kdp-oam-operator/pkg/apiserver/apis/v1/webservice"
+	"kdp-oam-operator/pkg/apiserver/apis/v1/webservice"
 	"kdp-oam-operator/pkg/apiserver/config"
 	"kdp-oam-operator/pkg/apiserver/infrastructure/clients"
 	"kdp-oam-operator/pkg/apiserver/utils"
