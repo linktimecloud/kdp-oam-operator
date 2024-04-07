@@ -27,12 +27,13 @@ const (
 	// AnnotationCtxSettingAdopt is the annotation which describe what is the capability used for in a Context Setting Object
 	AnnotationCtxSettingAdopt = "setting.ctx.bdc.kdp.io/adopt"
 
-	AnnotationBDCDefaultNamespace     = "bdc.kdp.io/namespace"
-	AnnotationBDCAlias                = "bdc.kdp.io/alias"
-	AnnotationBDCDescription          = "bdc.kdp.io/description"
-	AnnotationBDCUpdatedTime          = "bdc.kdp.io/updateTime"
-	AnnotationBDCAppliedConfiguration = "bdc.kdp.io/applied-configuration"
-	AnnotationCtxSettingOrigin        = "setting.ctx.bdc.kdp.io/origin"
+	AnnotationBDCDefaultNamespace           = "bdc.kdp.io/namespace"
+	AnnotationBDCAlias                      = "bdc.kdp.io/alias"
+	AnnotationBDCDescription                = "bdc.kdp.io/description"
+	AnnotationBDCUpdatedTime                = "bdc.kdp.io/updateTime"
+	AnnotationBDCAppliedConfiguration       = "bdc.kdp.io/applied-configuration"
+	AnnotationCtxSettingOrigin              = "setting.ctx.bdc.kdp.io/origin"
+	AnnotationCtxSettingReferencedConfigMap = "setting.ctx.bdc.kdp.io/referenced-configmap"
 
 	// FinalizerResourceTracker finalizer for gc
 	FinalizerResourceTracker = "bdc.kdp.io/resource-tracker-finalizer"

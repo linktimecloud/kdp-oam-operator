@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"kdp-oam-operator/api/bdc/common"
 	bdcv1alpha1 "kdp-oam-operator/api/bdc/v1alpha1"
 	ctrOptions "kdp-oam-operator/cmd/bdc/controller/options"
 	"kdp-oam-operator/pkg/controllers/bdc/constants"
@@ -170,11 +171,13 @@ func (s *CMSyncer) SyncConfigMapToContextSetting(item *coreV1.ConfigMap) error {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: fmt.Sprintf("%s-%s", item.Namespace, item.Name),
 			Annotations: map[string]string{
-				constants.AnnotationCtxSettingSource:    "config",
-				constants.AnnotationCtxSettingAdopt:     "true",
-				constants.AnnotationBDCDefaultNamespace: item.Namespace,
-				constants.AnnotationBDCName:             referencedBDCName,
-				constants.AnnotationOrgName:             referencedBDCOrgName,
+				constants.AnnotationCtxSettingOrigin:              string(common.CtxSettingCreatedViaSystem),
+				constants.AnnotationCtxSettingSource:              "config",
+				constants.AnnotationCtxSettingAdopt:               "true",
+				constants.AnnotationBDCDefaultNamespace:           item.Namespace,
+				constants.AnnotationBDCName:                       referencedBDCName,
+				constants.AnnotationOrgName:                       referencedBDCOrgName,
+				constants.AnnotationCtxSettingReferencedConfigMap: item.Name,
 			},
 			Labels: map[string]string{
 				constants.AnnotationBDCName: referencedBDCName,
