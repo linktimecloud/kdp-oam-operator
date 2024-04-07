@@ -144,3 +144,10 @@ const (
 	ApplicationFinalPhaseException ApplicationFinalPhase = "exception"
 	ApplicationFinalPhaseStopping  ApplicationFinalPhase = "stopping"
 )
+
+type CtxSettingCreationSource string
+
+const (
+	CtxSettingCreatedViaSystem   CtxSettingCreationSource = "system"
+	CtxSettingCreatedViaManually CtxSettingCreationSource = "manual"
+)
