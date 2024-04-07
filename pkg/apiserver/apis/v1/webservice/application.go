@@ -58,15 +58,20 @@ func (c *BigDataClusterWebService) listApplications(request *restful.Request, re
 			}
 		}
 	}
-	if bdcName != "" {
-		labels[constants.AnnotationBDCName] = bdcName
+	bdc, err := c.bigDataClusterMetaCacheParse(bdcName)
+	if err != nil {
+		exception.ReturnError(request, response, exception.ErrBigDataClusterNotFound)
+		return
+	}
+	if bdc.Name != "" {
+		labels[constants.AnnotationBDCName] = bdc.Name
 	}
 	apps, err := c.ApplicationService.ListApplications(request.Request.Context(), v1dto.ListOptions{Labels: labels})
 	if err != nil {
 		exception.ReturnError(request, response, err)
 		return
 	}
-	var listRtn []*v1dto.ApplicationBase
+	listRtn := make([]*v1dto.ApplicationBase, 0)
 	for _, item := range apps {
 		appBase, err := assembler.ConvertApplicationEntityToDTO(item)
 		if err != nil {

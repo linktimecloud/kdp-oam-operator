@@ -60,8 +60,8 @@ func NewBigDataClusterWebService(
 func (c *BigDataClusterWebService) GetWebService() *restful.WebService {
 	ws := new(restful.WebService)
 	ws.Path(versionPrefix+"/").
-		Consumes(restful.MIME_JSON, restful.MIME_XML).
-		Produces(restful.MIME_JSON, restful.MIME_XML).
+		Consumes(restful.MIME_JSON, restful.MIME_JSON).
+		Produces(restful.MIME_JSON, restful.MIME_JSON).
 		Doc("api for bigdatacluster manage")
 
 	tags := []string{"bigdatacluster"}
@@ -308,7 +308,7 @@ func (c *BigDataClusterWebService) listBigDataClusters(request *restful.Request,
 		exception.ReturnError(request, response, err)
 		return
 	}
-	var listRtn []*v1dto.BigDataClusterBase
+	listRtn := make([]*v1dto.BigDataClusterBase, 0)
 	for _, item := range bdcs {
 		bdcBase, err := assembler.ConvertBigDataClusterEntityToDTO(item)
 		if err != nil {
