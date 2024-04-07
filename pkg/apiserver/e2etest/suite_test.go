@@ -26,12 +26,15 @@ import (
 	"io"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	bdcv1alpha1 "kdp-oam-operator/api/bdc/v1alpha1"
 	"kdp-oam-operator/cmd/apiserver/options"
 	"kdp-oam-operator/pkg/apiserver"
 	"kdp-oam-operator/pkg/apiserver/config"
 	"kdp-oam-operator/pkg/apiserver/infrastructure/clients"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -77,6 +80,37 @@ var _ = BeforeSuite(func() {
 	Expect(kubeConfig).NotTo(BeNil())
 
 	err = bdcv1alpha1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	// Convert *rest.Config to clientcmd/api/v1.Config
+	kubeconfigPath := filepath.Join("../../..", "bin", "kubeconfig")
+	kubeConfigAPI := &clientcmdapi.Config{
+		Clusters: map[string]*clientcmdapi.Cluster{
+			"default": {
+				Server:                   kubeConfig.Host,
+				InsecureSkipTLSVerify:    kubeConfig.Insecure,
+				CertificateAuthorityData: kubeConfig.CAData,
+			},
+		},
+		Contexts: map[string]*clientcmdapi.Context{
+			"default": {
+				Cluster:  "default",
+				AuthInfo: "default",
+			},
+		},
+		AuthInfos: map[string]*clientcmdapi.AuthInfo{
+			"default": {
+				Token: kubeConfig.BearerToken,
+			},
+		},
+		CurrentContext: "default",
+	}
+	// generate kubeconfig
+	err = clientcmd.WriteToFile(*kubeConfigAPI, kubeconfigPath)
+	Expect(err).NotTo(HaveOccurred())
+
+	// set KUBECONFIG
+	err = os.Setenv("KUBECONFIG", kubeconfigPath)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme
