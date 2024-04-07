@@ -30,6 +30,14 @@ jobs:
         with:
           version: v3.8.2
 
+      - name: Setup node
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+        with:
+          node-version: "20"
+      - name: Generate helm doc
+        run: |
+          make helm-doc-gen
+
       - name: Docker Login
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
