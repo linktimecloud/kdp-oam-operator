@@ -13,7 +13,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.12.0
 	github.com/onsi/gomega v1.28.0
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.26.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -34,6 +34,7 @@ require (
 	github.com/emicklei/go-restful/v3 v3.10.2
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/fatih/color v1.15.0
+	github.com/google/go-cmp v0.5.9
 	github.com/gosuri/uitable v0.0.4
 	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/kubevela/velaux v1.9.3
@@ -142,7 +143,6 @@ require (
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/cel-go v0.12.6 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-containerregistry v0.15.2 // indirect
 	github.com/google/go-github/v32 v32.1.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
