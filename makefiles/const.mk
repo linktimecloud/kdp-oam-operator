@@ -30,7 +30,7 @@ GIT_REMOTE            := origin
 GIT_BRANCH            := $(shell git rev-parse --symbolic-full-name --verify --quiet --abbrev-ref HEAD)
 GIT_TAG               := $(shell git describe --exact-match --tags --abbrev=0  2> /dev/null || echo untagged)
 GIT_TREE_STATE        := $(shell if [[ -z "`git status --porcelain`" ]]; then echo "clean" ; else echo "dirty"; fi)
-RELEASE_TAG           := $(shell if [[ "$(GIT_TAG)" =~ ^[0-9]{1,}.[0-9]{1,}[.\|-][0-9]{1,} ]]; then echo "true"; else echo "false"; fi)
+RELEASE_TAG           := $(shell if [[ "$(GIT_TAG)" =~ ^v[0-9]+\.[0-9]+\.[0-9]+.*$$ ]]; then echo "true"; else echo "false"; fi)
 
 VERSION               := latest
 ifeq ($(RELEASE_TAG),true)
