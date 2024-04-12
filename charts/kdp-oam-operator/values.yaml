@@ -2,6 +2,11 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+## @section kdp-oam-operator core parameters
+## @param images.tag Common tag for kdp-oam-operator images. Defaults to `.Chart.AppVersion`.
+## @param images.registry Registry to use for the controller
+## @param images.pullPolicy imagePullPolicy to apply to all containers
+## @param images.pullSecrets Secrets with credentials to pull images from a private registry
 images:
   # -- Common tag for kdp-oam-operator images. Defaults to `.Chart.AppVersion`.
   tag: ""
@@ -13,21 +18,30 @@ images:
   pullSecrets: []
   # - name: argo-pull-secret
 
+## @param systemNamespace.create Specifies whether a system namespace should be created
+## @param systemNamespace.name The name of the system namespace
 systemNamespace:
   create: false
   name: kdp-system
 
+## @param kdpContextLabel.key The key of the label to use for the kdp context
+## @param kdpContextLabel.value The value of the label to use for the kdp context
 kdpContextLabel:
   key: kdp-operator-context
   value: KDP
 
+## @param nameOverride String to partially override `kdp-oam-operator.fullname` template
 nameOverride: ""
+## @param fullnameOverride String to fully override `kdp-oam-operator.fullname` template
 fullnameOverride: "kdp-oam-operator"
 
 ## @param rbac.create Specifies whether a RBAC role should be created
 rbac:
   create: true
 
+## @param serviceAccount.name The name of the service account to use.
+## @param serviceAccount.annotations Annotations to add to the service account
+## @param serviceAccount.create Specifies whether a service account should be created
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
@@ -37,11 +51,14 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: kdp-oam-operator-sa
 
+## @param podAnnotations Annotations to add to the pod
 podAnnotations: {}
 
+## @param podSecurityContext Security context to add to the pod
 podSecurityContext: {}
   # fsGroup: 2000
 
+## @param securityContext Security context to add to the pod
 securityContext: {}
   # capabilities:
   #   drop:
@@ -50,13 +67,28 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
+## @param nodeSelector Node selector to add to the pod
 nodeSelector: {}
 
+## @param tolerations Tolerations to add to the pod
 tolerations: []
 
+## @param affinity Affinity to add to the pod
 affinity: {}
 
-
+## @section kdp-oam-apiserver parameters
+## @param apiserver.enabled Specifies whether the apiserver should be enabled
+## @param apiserver.replicaCount Number of replicas for the apiserver
+## @param apiserver.service.type Service type for the apiserver
+## @param apiserver.service.port Port to use for the apiserver
+## @param apiserver.image.repository Repository to use for the apiserver
+## @param apiserver.image.tag Image tag for the kdp-oam-operator apiserver. Defaults to `.Values.images.tag`.
+## @param apiserver.resources Resources to add to the apiserver
+## @param apiserver.env Environment variables to add to the apiserver
+## @param apiserver.extraArgs Extra arguments to pass to the apiserver
+## @param apiserver.serviceAccount.create Specifies whether a service account should be created
+## @param apiserver.serviceAccount.annotations Annotations to add to the service account
+## @param apiserver.serviceAccount.name The name of the service account to use.
 apiserver:
   enabled: true
   replicaCount: 1
@@ -65,7 +97,6 @@ apiserver:
     port: 8000
   image:
     repository: kdp-oam-operator/apiserver
-    # -- Image tag for the kdp-oam-operator apiserver. Defaults to `.Values.images.tag`.
     tag: ""
   resources: {}
   env: []
@@ -79,13 +110,27 @@ apiserver:
     # If not set and create is true, a name is generated using the fullname template
     name: kdp-oam-apiserver-sa
 
-
+## @section kdp-oam-controller parameters
+## @param controller.replicaCount Number of replicas for the controller
+## @param controller.image.repository Repository to use for the controller
+## @param controller.image.tag Image tag for the kdp-oam-operator controller. Defaults to `.Values.images.tag`.
+## @param controller.metricService.enabled Specifies whether the metric service should be enabled
+## @param controller.metricService.type Service type for the metric service
+## @param controller.metricService.port Port for the metric service
+## @param controller.healthzService.type Service type for the healthz service
+## @param controller.healthzService.port Port for the healthz service
+## @param controller.Resources.limits.cpu CPU limits to add to the controller Requests to add to the controller
+## @param controller.Resources.limits.memory Memory limits to add to the controller
+## @param controller.Resources.requests.cpu CPU requests to add to the controller
+## @param controller.Resources.requests.memory Memory requests to add to the controller
+## @param controller.env Environment variables to add to the controller
+## @param controller.extraArgs Extra arguments to pass to the controller
+## @param controller.args.concurrentReconciles Number of concurrent reconciles to use for the controller
+## @param controller.args.reSyncPeriod Reconcile period to use for the controller
 controller:
   replicaCount: 1
   image:
-    # -- Registry to use for the controller
     repository: kdp-oam-operator/controller
-    # -- Image tag for the kdp-oam-operator controller. Defaults to `.Values.images.tag`.
     tag: ""
   metricService:
     enabled: true
@@ -107,6 +152,19 @@ controller:
     concurrentReconciles: 5
     reSyncPeriod: 10s
 
+## @param admissionWebhooks.enabled Specifies whether admission webhooks should be enabled
+## @param admissionWebhooks.service.type Service type for the admission webhooks
+## @param admissionWebhooks.service.port Port for the admission webhooks
+## @param admissionWebhooks.failurePolicy Failure policy for the admission webhooks
+## @param admissionWebhooks.certManager.enabled Specifies whether cert-manager should be used for the admission webhooks
+## @param admissionWebhooks.certificate.mountPath Path to mount the certificate
+## @param admissionWebhooks.patch.enabled Specifies whether the patch should be enabled
+## @param admissionWebhooks.patch.image.repository Repository to use for the patch
+## @param admissionWebhooks.patch.image.tag
+## @param admissionWebhooks.patch.image.pullPolicy imagePullPolicy to apply to the patch
+## @param admissionWebhooks.patch.nodeSelector Node selector to add to the patch
+## @param admissionWebhooks.patch.affinity Affinity to add to the patch
+## @param admissionWebhooks.patch.tolerations Tolerations to add to the patch
 admissionWebhooks:
   enabled: false
   service:

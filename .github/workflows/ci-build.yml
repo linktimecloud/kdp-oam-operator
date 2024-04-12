@@ -15,22 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Get Short SHA
-        id: slug
-        run: echo "git_revision=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-
-      - name: Get Version
-        id: get_version
-        run: |
-          if [[ $version =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?(-rc[0-9]+)?$ ]]; then
-            VERSION=${{ github.ref_name }}
-          else
-            VERSION="latest"
-          fi
-          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
-
-
       - name: Docker Login
         uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
         with:
@@ -39,12 +23,8 @@ jobs:
 
       - name: Build Images
         run: |
-          if [[ $version =~ ^v[0-9]+\.[0-9]+(\.[0-9]+)?(-rc[0-9]+)?$ ]]; then
-            GIT_VERSION=${{ github.ref_name }}
-          else
-            GIT_VERSION=${{ steps.slug.outputs.git_revision }}
-          fi
-          make docker-build IMG_REGISTRY=${{ secrets.CONTAINER_REGISTRY }} VERSION=${{ steps.get_version.outputs.VERSION }}
+          make docker-build IMG_REGISTRY=${{ secrets.CONTAINER_REGISTRY }}
 
       - name: Push Images
-        run: make docker-push IMG_REGISTRY=${{ secrets.CONTAINER_REGISTRY }} VERSION=${{ steps.get_version.outputs.VERSION }}
+        run: |
+          make docker-push IMG_REGISTRY=${{ secrets.CONTAINER_REGISTRY }}
