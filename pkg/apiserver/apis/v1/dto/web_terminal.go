@@ -14,14 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service
+package dto
 
-const (
-	bigDataClusterAPIVersion = "bdc.kdp.io/v1alpha1"
-	kindApplication          = "Application"
-	kindContextSecret        = "ContextSecret"
-	kindContextSetting       = "ContextSetting"
-	kindBigDataCluster       = "BigDataCluster"
-	kindTerminal             = "CloudShell"
-	kindTerminalApiVersion   = "cloudshell.cloudtty.io/v1alpha1"
-)
+import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+type TerminalBase struct {
+	Name       string      `json:"name"`
+	NameSpace  string      `json:"nameSpace"`
+	Phase      string      `json:"phase"`
+	AccessUrl  string      `json:"accessUrl"`
+	CreateTime metav1.Time `json:"createTime"`
+	EndTime    metav1.Time `json:"endTime"`
+	Ttl        int32       `json:"ttl"`
+}
+
+type WebTerminalResponse struct {
+	Data    *TerminalBase `json:"data"`
+	Message string        `json:"message"`
+	Status  int           `json:"status"`
+}

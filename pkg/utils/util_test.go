@@ -19,6 +19,7 @@ package utils
 import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -366,5 +367,22 @@ func TestRemoveFinalizer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			RemoveFinalizer(tt.args.o, tt.args.finalizer)
 		})
+	}
+}
+
+func TestGetEnv(t *testing.T) {
+	// 设置环境变量
+	os.Setenv("EXISTING_KEY", "existing_value")
+
+	// 测试存在的键
+	existingValue := GetEnv("EXISTING_KEY", "fallback")
+	if existingValue != "existing_value" {
+		t.Errorf("GetEnv(\"EXISTING_KEY\", \"fallback\") = %s; want existing_value", existingValue)
+	}
+
+	// 测试不存在的键
+	nonexistentValue := GetEnv("NONEXISTENT_KEY", "fallback")
+	if nonexistentValue != "fallback" {
+		t.Errorf("GetEnv(\"NONEXISTENT_KEY\", \"fallback\") = %s; want fallback", nonexistentValue)
 	}
 }

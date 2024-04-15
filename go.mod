@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	cuelang.org/go v0.6.0
+	github.com/cloudtty/cloudtty v0.5.7
 	github.com/emicklei/go-restful-openapi/v2 v2.9.1
 	github.com/getkin/kin-openapi v0.118.0
 	github.com/go-openapi/spec v0.20.7

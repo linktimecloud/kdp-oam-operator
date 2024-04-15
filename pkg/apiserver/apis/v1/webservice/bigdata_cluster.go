@@ -38,6 +38,7 @@ type BigDataClusterWebService struct {
 	ContextSecretService        service.ContextSecretService
 	ContextSettingService       service.ContextSettingService
 	XDefinitionService          service.XDefinitionService
+	WebTerminalService          service.WebTerminalService
 }
 
 func NewBigDataClusterWebService(
@@ -46,7 +47,8 @@ func NewBigDataClusterWebService(
 	applicationResourcesService service.ApplicationResourcesService,
 	contextSecretService service.ContextSecretService,
 	contextSettingService service.ContextSettingService,
-	xDefinitionService service.XDefinitionService) WebService {
+	xDefinitionService service.XDefinitionService,
+	webTerminalService service.WebTerminalService) WebService {
 	return &BigDataClusterWebService{
 		BigDataClusterService:       bigDataClusterService,
 		ApplicationService:          applicationService,
@@ -54,6 +56,7 @@ func NewBigDataClusterWebService(
 		ContextSecretService:        contextSecretService,
 		ContextSettingService:       contextSettingService,
 		XDefinitionService:          xDefinitionService,
+		WebTerminalService:          webTerminalService,
 	}
 }
 
@@ -63,6 +66,15 @@ func (c *BigDataClusterWebService) GetWebService() *restful.WebService {
 		Consumes(restful.MIME_JSON, restful.MIME_JSON).
 		Produces(restful.MIME_JSON, restful.MIME_JSON).
 		Doc("api for bigdatacluster manage")
+
+	terminalTags := []string{"terminal"}
+
+	ws.Route(ws.POST("/terminal").To(c.createGeneralTerminal).
+		Doc("create general terminal").
+		Metadata(restfulspec.KeyOpenAPITags, terminalTags).
+		Writes(v1dto.WebTerminalResponse{}).
+		Returns(200, "OK", v1dto.WebTerminalResponse{}).
+		Returns(400, "Bad request", baseTypes.BadRequestResponse{}))
 
 	tags := []string{"bigdatacluster"}
 
@@ -187,6 +199,16 @@ func (c *BigDataClusterWebService) GetWebService() *restful.WebService {
 		Returns(200, "OK", v1dto.ApplicationResourceResponse{}).
 		Returns(400, "Bad request", baseTypes.BadRequestResponse{}).
 		Returns(404, "Not found", baseTypes.NotFoundResponse{}))
+
+	ws.Route(ws.POST("/applications/{appName}/pods/{podName}/containers/{containerName}/terminal").To(c.createPodTerminal).
+		Doc("open application applied pods container exec").
+		Metadata(restfulspec.KeyOpenAPITags, applicationResourcesTags).
+		Param(ws.PathParameter("appName", "name of the bdc application").DataType("string").Required(true)).
+		Param(ws.PathParameter("podName", "name of the bdc application pod").DataType("string").Required(true)).
+		Param(ws.PathParameter("containerName", "name of the bdc application pod container").DataType("string").Required(true)).
+		Writes(v1dto.WebTerminalResponse{}).
+		Returns(200, "OK", v1dto.WebTerminalResponse{}).
+		Returns(400, "Bad request", baseTypes.BadRequestResponse{}))
 
 	ws.Route(ws.GET("/applications/{appName}/serviceEndpoints").To(c.getApplicationServiceEndpoints).
 		Doc("query application service endpoints").

@@ -27,6 +27,7 @@ const (
 	LabelAppRuntimeName = "runtime.app.bdc.kdp.io/name"
 	LabelBDCName        = AnnotationBDCName
 	LabelOrgName        = AnnotationOrgName
+	LabelName           = "terminal.bdc.kdp.io/name"
 
 	AnnotationCtxSettingSource = "setting.ctx.bdc.kdp.io/source"
 	AnnotationCtxSettingType   = "setting.ctx.bdc.kdp.io/type"

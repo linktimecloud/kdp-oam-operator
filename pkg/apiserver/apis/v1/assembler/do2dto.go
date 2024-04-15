@@ -111,3 +111,16 @@ func ConvertXDefinitionEntityToDTO(entity *entity.XDefinitionEntity) (*v1dto.XDe
 	defBase.UISchema = pkgutils.StringToMap(entity.UISchema)
 	return defBase, nil
 }
+
+func ConvertWebTerminalEntityToDTO(entity *entity.WebTerminalEntity) (*v1dto.TerminalBase, error) {
+	terBase := &v1dto.TerminalBase{
+		Name:       entity.Name,
+		NameSpace:  entity.NameSpace,
+		Phase:      entity.Phase,
+		AccessUrl:  entity.AccessUrl,
+		CreateTime: entity.CreateTime,
+		EndTime:    entity.EndTime,
+		Ttl:        entity.Ttl,
+	}
+	return terBase, nil
+}

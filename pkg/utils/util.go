@@ -18,8 +18,11 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+	"os"
+	"strconv"
 )
 
 type labelAnnotationObject interface {
@@ -115,4 +118,24 @@ func RemoveFinalizer(o metav1.Object, finalizer string) {
 		}
 	}
 	o.SetFinalizers(f)
+}
+
+// GetEnv from env get data
+func GetEnv(key, fallback string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+	return value
+}
+
+// StringToInt32 Convert the string value to an int32
+func StringToInt32(strValue string, fallback int32) int32 {
+	intValue, err := strconv.ParseInt(strValue, 10, 32)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return fallback
+	}
+	int32Value := int32(intValue)
+	return int32Value
 }
