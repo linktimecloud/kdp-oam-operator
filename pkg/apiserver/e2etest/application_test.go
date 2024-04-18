@@ -81,6 +81,14 @@ var _ = Describe("Test application rest api", func() {
 		Expect(res.StatusCode).Should(Equal(404))
 	})
 
+	It("Test listing applications is empty(Do not specify bdc)", func() {
+		defer GinkgoRecover()
+		res := getWithQueryRequest("/applications", map[string]string{})
+		var apps v1dto.ListApplicationsResponse
+		Expect(decodeResponseBody(res, &apps)).Should(Succeed())
+		Expect(cmp.Diff(len(apps.Data), 0)).Should(BeEmpty())
+	})
+
 	It("Test listing applications is empty", func() {
 		defer GinkgoRecover()
 		res := getWithQueryRequest("/applications", map[string]string{
@@ -116,6 +124,14 @@ var _ = Describe("Test application rest api", func() {
 		})
 		var apps v1dto.ListApplicationsResponse
 
+		Expect(decodeResponseBody(res, &apps)).Should(Succeed())
+		Expect(cmp.Diff(len(apps.Data), 1)).Should(BeEmpty())
+	})
+
+	It("Test listing applications is empty(Do not specify bdc)", func() {
+		defer GinkgoRecover()
+		res := getWithQueryRequest("/applications", map[string]string{})
+		var apps v1dto.ListApplicationsResponse
 		Expect(decodeResponseBody(res, &apps)).Should(Succeed())
 		Expect(cmp.Diff(len(apps.Data), 1)).Should(BeEmpty())
 	})
