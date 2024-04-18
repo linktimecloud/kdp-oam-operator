@@ -48,7 +48,7 @@ func (c *BigDataClusterWebService) createPodTerminal(request *restful.Request, r
 
 	TerminalBase, err := assembler.ConvertWebTerminalEntityToDTO(terminal)
 	if err != nil {
-		klog.Errorf("convert bigdata cluster to base failure %s", err.Error())
+		klog.Errorf("convert terminal to base failure %s", err.Error())
 		exception.ReturnError(request, response, err)
 		return
 	}
