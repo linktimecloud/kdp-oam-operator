@@ -134,7 +134,7 @@ func (w webTerminalServiceImpl) OpenTerminal(ctx context.Context, kubeConfigSecr
 		err := w.CreateTerminal(ctx, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName)
 		if err != nil {
 			log.Logger.Errorf("create terminal exec failure %s", err.Error())
-			return nil, errors.New("create terminal failed")
+			return nil, errors.New(fmt.Sprintf("create terminal failed %s", err.Error()))
 		}
 		log.Logger.Infof("%s %s create success", TerminalNameSpace, TerminalName)
 		time.Sleep(500 * time.Millisecond)
