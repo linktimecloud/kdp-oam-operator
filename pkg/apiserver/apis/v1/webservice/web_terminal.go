@@ -23,6 +23,7 @@ import (
 
 	"github.com/emicklei/go-restful/v3"
 	"k8s.io/klog/v2"
+	"kdp-oam-operator/pkg/utils"
 )
 
 func (c *BigDataClusterWebService) createPodTerminal(request *restful.Request, response *restful.Response) {
@@ -37,10 +38,11 @@ func (c *BigDataClusterWebService) createPodTerminal(request *restful.Request, r
 		exception.ReturnError(request, response, exception.ErrApplicationNotFound)
 		return
 	}
+	namespace := utils.GetEnv("NAMESPACE", "default")
 
 	// create pod exec cloud shell  kubeConfigSecretName, TerminalName, TerminalNameSpace, podName, containerName
 	terminal, err := c.WebTerminalService.OpenTerminal(
-		request.Request.Context(), kubeConfigSecretName, TerminalName, "default", app.AppRuntimeNs, podName, containerName)
+		request.Request.Context(), kubeConfigSecretName, TerminalName, namespace, app.AppRuntimeNs, podName, containerName)
 	if err != nil {
 		exception.ReturnError(request, response, err)
 		return
@@ -65,9 +67,9 @@ func (c *BigDataClusterWebService) createPodTerminal(request *restful.Request, r
 func (c *BigDataClusterWebService) createGeneralTerminal(request *restful.Request, response *restful.Response) {
 	kubeConfigSecretName := "general-terminal-secret"
 	TerminalName := "general-exec"
-
+	namespace := utils.GetEnv("NAMESPACE", "default")
 	terminal, err := c.WebTerminalService.OpenTerminal(
-		request.Request.Context(), kubeConfigSecretName, TerminalName, "default", "", "", "")
+		request.Request.Context(), kubeConfigSecretName, TerminalName, namespace, "", "", "")
 	if err != nil {
 		exception.ReturnError(request, response, err)
 		return
