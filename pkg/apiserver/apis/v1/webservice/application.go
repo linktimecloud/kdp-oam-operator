@@ -58,12 +58,13 @@ func (c *BigDataClusterWebService) listApplications(request *restful.Request, re
 			}
 		}
 	}
-	bdc, err := c.bigDataClusterMetaCacheParse(bdcName)
-	if err != nil {
-		exception.ReturnError(request, response, exception.ErrBigDataClusterNotFound)
-		return
-	}
-	if bdc.Name != "" {
+	if bdcName != "" {
+		// If specify bdcName, then we need to check the bdc first
+		bdc, err := c.bigDataClusterMetaCacheParse(bdcName)
+		if err != nil {
+			exception.ReturnError(request, response, exception.ErrBigDataClusterNotFound)
+			return
+		}
 		labels[constants.AnnotationBDCName] = bdc.Name
 	}
 	apps, err := c.ApplicationService.ListApplications(request.Request.Context(), v1dto.ListOptions{Labels: labels})
