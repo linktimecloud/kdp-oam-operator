@@ -17,8 +17,10 @@ limitations under the License.
 package entity
 
 import (
+	"fmt"
 	csv1alpha1 "github.com/cloudtty/cloudtty/pkg/apis/cloudshell/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"kdp-oam-operator/pkg/utils"
 	"time"
 )
 
@@ -36,11 +38,14 @@ type WebTerminalEntity struct {
 func Object2WebTerminalEntity(terminal *csv1alpha1.CloudShell) *WebTerminalEntity {
 	tLater := terminal.CreationTimestamp.Add(time.Duration(terminal.Spec.Ttl) * time.Second)
 
+	httpType := utils.GetEnv("HTTPTYPE", "http")
+	DOMAIN := utils.GetEnv("DOMAIN", "cloudtty.kdp-e2e.io")
+	url := fmt.Sprintf("%s://%s%s", httpType, DOMAIN, terminal.Status.AccessURL)
 	terminalEntity := &WebTerminalEntity{
 		Name:       terminal.Name,
 		NameSpace:  terminal.Namespace,
 		Phase:      terminal.Status.Phase,
-		AccessUrl:  terminal.Status.AccessURL,
+		AccessUrl:  url,
 		CreateTime: terminal.CreationTimestamp,
 		EndTime:    metav1.NewTime(tLater),
 		Ttl:        terminal.Spec.Ttl,

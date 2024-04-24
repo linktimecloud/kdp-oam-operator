@@ -50,6 +50,8 @@ func NewWebTerminalService() WebTerminalService {
 func (w webTerminalServiceImpl) CreateTerminal(ctx context.Context, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName string) error {
 	var command string
 	ttl := utils.GetEnv("TTL", "3600")
+	ingressName := utils.GetEnv("INGRESSNAME", "cloudtty-ingress")
+	ingressClassName := utils.GetEnv("INGRESSCLASSNAME", "kong")
 	if podName != "" {
 		command = fmt.Sprintf("kubectl exec -it %s -n %s -c %s -- sh -c \"clear; (bash || ash || sh)\"", podName, podNameSpace, containerName)
 	} else {
@@ -75,7 +77,13 @@ func (w webTerminalServiceImpl) CreateTerminal(ctx context.Context, kubeConfigSe
 			CommandAction: command,
 			Ttl:           utils.StringToInt32(ttl, 3600),
 			Cleanup:       true,
-			ExposeMode:    csv1alpha1.ExposureMode(utils.GetEnv("EXPOSURE_MODE", "ClusterIP")),
+			ExposeMode:    csv1alpha1.ExposureMode(utils.GetEnv("EXPOSURE_MODE", "Ingress")),
+			IngressConfig: &csv1alpha1.IngressConfig{
+				IngressName:      ingressName,
+				Namespace:        TerminalNameSpace,
+				IngressClassName: ingressClassName,
+			},
+			Once: false,
 		},
 	}
 	if err := w.KubeClient.Create(ctx, &cloudShell); err != nil {
@@ -119,7 +127,7 @@ func (w webTerminalServiceImpl) CheckTerminal(ctx context.Context, TerminalName,
 
 func (w webTerminalServiceImpl) OpenTerminal(ctx context.Context, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName string) (*entity.WebTerminalEntity, error) {
 
-	//check pod exec
+	//check terminal
 	err := w.CheckTerminal(ctx, TerminalName, TerminalNameSpace)
 	if err != nil {
 		if err.Error() == "terminal is exists" {
@@ -130,7 +138,7 @@ func (w webTerminalServiceImpl) OpenTerminal(ctx context.Context, kubeConfigSecr
 		}
 
 	} else {
-		// create pod exec cloud shell
+		// create terminal
 		err := w.CreateTerminal(ctx, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName)
 		if err != nil {
 			log.Logger.Errorf("create terminal exec failure %s", err.Error())
@@ -140,7 +148,7 @@ func (w webTerminalServiceImpl) OpenTerminal(ctx context.Context, kubeConfigSecr
 		time.Sleep(500 * time.Millisecond)
 	}
 
-	// get cloud shell status and url
+	// get terminal and url
 	terminal, err := w.GetExecTerminal(ctx, TerminalName, TerminalNameSpace)
 	if err != nil {
 		return nil, nil
