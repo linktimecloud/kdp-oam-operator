@@ -1,19 +1,19 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"kdp-oam-operator/pkg/apiserver/domain/entity"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/util/yaml"
 	"kdp-oam-operator/pkg/apiserver/infrastructure/clients"
-	"kdp-oam-operator/pkg/controllers/bdc/constants"
 	"kdp-oam-operator/pkg/utils"
 	"kdp-oam-operator/pkg/utils/log"
 	"strings"
+	"text/template"
 	"time"
 
-	csv1alpha1 "github.com/cloudtty/cloudtty/pkg/apis/cloudshell/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -21,9 +21,9 @@ import (
 // WebTerminalService Terminal Service
 type WebTerminalService interface {
 	CreateTerminal(ctx context.Context, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName string) error
-	GetExecTerminal(ctx context.Context, TerminalName, TerminalNameSpace string) (*entity.WebTerminalEntity, error)
+	GetExecTerminal(ctx context.Context, TerminalName, TerminalNameSpace string, limitTry int) (*unstructured.Unstructured, error)
 	CheckTerminal(ctx context.Context, TerminalName, TerminalNameSpace string) error
-	OpenTerminal(ctx context.Context, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName string) (*entity.WebTerminalEntity, error)
+	OpenTerminal(ctx context.Context, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName string) (*unstructured.Unstructured, error)
 }
 
 type webTerminalServiceImpl struct {
@@ -50,7 +50,7 @@ func NewWebTerminalService() WebTerminalService {
 func (w webTerminalServiceImpl) CreateTerminal(ctx context.Context, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName string) error {
 	var command string
 	ttl := utils.GetEnv("TTL", "3600")
-	ingressName := utils.GetEnv("INGRESSNAME", "cloudtty-ingress")
+	ingressName := utils.GetEnv("INGRESSNAME", "cloudtty")
 	ingressClassName := utils.GetEnv("INGRESSCLASSNAME", "kong")
 	if podName != "" {
 		command = fmt.Sprintf("kubectl exec -it %s -n %s -c %s -- sh -c \"clear; (bash || ash || sh)\"", podName, podNameSpace, containerName)
@@ -58,65 +58,100 @@ func (w webTerminalServiceImpl) CreateTerminal(ctx context.Context, kubeConfigSe
 		command = "bash"
 	}
 
-	cloudShell := csv1alpha1.CloudShell{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       kindTerminal,
-			APIVersion: kindTerminalApiVersion,
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      TerminalName,
-			Namespace: TerminalNameSpace,
-			Labels: map[string]string{
-				constants.LabelName: TerminalName,
-			},
-		},
-		Spec: csv1alpha1.CloudShellSpec{
-			SecretRef: &csv1alpha1.LocalSecretReference{
-				Name: kubeConfigSecretName,
-			},
-			CommandAction: command,
-			Ttl:           utils.StringToInt32(ttl, 3600),
-			Cleanup:       true,
-			ExposeMode:    csv1alpha1.ExposureMode(utils.GetEnv("EXPOSURE_MODE", "Ingress")),
-			IngressConfig: &csv1alpha1.IngressConfig{
-				IngressName:      ingressName,
-				Namespace:        TerminalNameSpace,
-				IngressClassName: ingressClassName,
-			},
-			Once: false,
-		},
+	// Get cloud shell template file and parse
+	terminalTemplateFileName := utils.GetEnv("TERMINAL_TEMPLATE_NAME", "/opt/terminal-config/terminalTemplate.yaml")
+	tmpl, err := template.ParseFiles(terminalTemplateFileName)
+	if err != nil {
+		log.Logger.Errorf("parse template file %s status:%s", terminalTemplateFileName, err.Error())
+		return err
 	}
-	if err := w.KubeClient.Create(ctx, &cloudShell); err != nil {
+
+	data := struct {
+		TerminalName           string
+		CommandAction          string
+		TerminalNameSpace      string
+		TtlSecondsAfterStarted int64
+		KubeConfigName         string
+		IngressName            string
+		IngressClassName       string
+	}{
+		TerminalName:           TerminalName,
+		CommandAction:          command,
+		TerminalNameSpace:      TerminalNameSpace,
+		TtlSecondsAfterStarted: utils.StringToInt64(ttl, 3600),
+		KubeConfigName:         kubeConfigSecretName,
+		IngressName:            ingressName,
+		IngressClassName:       ingressClassName,
+	}
+
+	// Create template and render
+	var RenderTerminalData bytes.Buffer
+	err = tmpl.Execute(&RenderTerminalData, data)
+	if err != nil {
+		log.Logger.Errorf("create template and render status:%s", err.Error())
+		return err
+	}
+
+	// Converts the rendered YAML string into a Kubernetes resource object
+	var obj unstructured.Unstructured
+	decode := yaml.NewYAMLOrJSONDecoder(&RenderTerminalData, 4096)
+	err = decode.Decode(&obj.Object)
+	if err != nil {
+		log.Logger.Errorf("render yaml to Kubernetes resource object status:%s", err.Error())
+		return err
+	}
+
+	if err := w.KubeClient.Create(ctx, &obj); err != nil {
+		log.Logger.Errorf("create %s %s terminal status:%s", TerminalNameSpace, TerminalName, err.Error())
 		return err
 	}
 	return nil
 }
 
-func (w webTerminalServiceImpl) GetExecTerminal(ctx context.Context, TerminalName, TerminalNameSpace string) (*entity.WebTerminalEntity, error) {
+func (w webTerminalServiceImpl) GetExecTerminal(ctx context.Context, TerminalName, TerminalNameSpace string, limitTry int) (*unstructured.Unstructured, error) {
+	MaxTry := utils.StringToInt(utils.GetEnv("MAXTRY", "10"), 10)
 	err := w.CheckTerminal(ctx, TerminalName, TerminalNameSpace)
 	if err == nil {
 		return nil, errors.New("terminal not found")
 	}
 
-	var execTerminal csv1alpha1.CloudShell
-	if err := w.KubeClient.Get(ctx, client.ObjectKey{Name: TerminalName, Namespace: TerminalNameSpace}, &execTerminal); err != nil {
+	// create obj to save data
+	obj := &unstructured.Unstructured{}
+	obj.SetKind("CloudShell")
+	obj.SetAPIVersion("cloudshell.cloudtty.io/v1alpha1")
+	if err := w.KubeClient.Get(ctx, client.ObjectKey{Name: TerminalName, Namespace: TerminalNameSpace}, obj); err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			log.Logger.Errorf("get %s %s status:%s", TerminalNameSpace, TerminalName, err.Error())
 			return nil, errors.New("terminal not found")
 		}
 		return nil, err
 	}
-	if execTerminal.Status.Phase != "Ready" {
-		log.Logger.Infof("get %s %s status:%s", TerminalNameSpace, TerminalName, execTerminal.Status.Phase)
-		time.Sleep(500 * time.Millisecond)
-		return w.GetExecTerminal(ctx, TerminalName, TerminalNameSpace)
+
+	terminalStatus, found, _ := unstructured.NestedFieldCopy(obj.Object, "status", "phase")
+	if !found {
+		fmt.Println("Status:", terminalStatus)
 	}
-	return entity.Object2WebTerminalEntity(&execTerminal), nil
+
+	if terminalStatus != "Ready" {
+		if limitTry > MaxTry {
+			log.Logger.Errorf("%s %s get status The number of retries exceeded the maximum，status:%s", TerminalNameSpace, TerminalName, terminalStatus)
+			return nil, errors.New(fmt.Sprintf("The number of attempts to obtain terminal status exceeded the maximum， status is:%s", terminalStatus))
+		}
+		log.Logger.Infof("[%d/%d] get %s %s cloudshell status:%s", limitTry, MaxTry, TerminalNameSpace, TerminalName, terminalStatus)
+		time.Sleep(500 * time.Millisecond)
+		limitTry += 1
+		return w.GetExecTerminal(ctx, TerminalName, TerminalNameSpace, limitTry)
+	}
+	log.Logger.Infof("%s %s get data success", TerminalNameSpace, TerminalName)
+	return obj, nil
 }
 
 func (w webTerminalServiceImpl) CheckTerminal(ctx context.Context, TerminalName, TerminalNameSpace string) error {
-	var execTerminal csv1alpha1.CloudShell
-	if err := w.KubeClient.Get(ctx, client.ObjectKey{Name: TerminalName, Namespace: TerminalNameSpace}, &execTerminal); err != nil {
+	obj := &unstructured.Unstructured{}
+	obj.SetKind("CloudShell")
+	obj.SetAPIVersion("cloudshell.cloudtty.io/v1alpha1")
+	if err := w.KubeClient.Get(ctx, client.ObjectKey{Name: TerminalName, Namespace: TerminalNameSpace}, obj); err != nil {
+		log.Logger.Infof("get %s %s status:%s", TerminalNameSpace, TerminalName, err.Error())
 		if strings.Contains(err.Error(), "not found") {
 			return nil
 		}
@@ -125,8 +160,7 @@ func (w webTerminalServiceImpl) CheckTerminal(ctx context.Context, TerminalName,
 	return errors.New("terminal is exists")
 }
 
-func (w webTerminalServiceImpl) OpenTerminal(ctx context.Context, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName string) (*entity.WebTerminalEntity, error) {
-
+func (w webTerminalServiceImpl) OpenTerminal(ctx context.Context, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName string) (*unstructured.Unstructured, error) {
 	//check terminal
 	err := w.CheckTerminal(ctx, TerminalName, TerminalNameSpace)
 	if err != nil {
@@ -149,9 +183,9 @@ func (w webTerminalServiceImpl) OpenTerminal(ctx context.Context, kubeConfigSecr
 	}
 
 	// get terminal and url
-	terminal, err := w.GetExecTerminal(ctx, TerminalName, TerminalNameSpace)
+	terminal, err := w.GetExecTerminal(ctx, TerminalName, TerminalNameSpace, 0)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 	return terminal, nil
 }

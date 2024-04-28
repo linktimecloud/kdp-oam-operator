@@ -129,13 +129,23 @@ func GetEnv(key, fallback string) string {
 	return value
 }
 
-// StringToInt32 Convert the string value to an int32
-func StringToInt32(strValue string, fallback int32) int32 {
-	intValue, err := strconv.ParseInt(strValue, 10, 32)
+// StringToInt64 Convert the string value to an int64
+func StringToInt64(strValue string, fallback int64) int64 {
+	intValue, err := strconv.ParseInt(strValue, 10, 64)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return fallback
 	}
-	int32Value := int32(intValue)
-	return int32Value
+	int64Value := int64(intValue)
+	return int64Value
+}
+
+// StringToInt Convert the string value to an int
+func StringToInt(strValue string, fallback int) int {
+	intValue, err := strconv.Atoi(strValue)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return fallback
+	}
+	return intValue
 }

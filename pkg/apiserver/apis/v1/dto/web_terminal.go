@@ -25,11 +25,17 @@ type TerminalBase struct {
 	AccessUrl  string      `json:"accessUrl"`
 	CreateTime metav1.Time `json:"createTime"`
 	EndTime    metav1.Time `json:"endTime"`
-	Ttl        int32       `json:"ttl"`
+	Ttl        int64       `json:"ttl"`
 }
 
 type WebTerminalResponse struct {
 	Data    *TerminalBase `json:"data"`
 	Message string        `json:"message"`
 	Status  int           `json:"status"`
+}
+
+type ExtractionRules struct {
+	Phase     []string `json:"phase"`
+	AccessUrl []string `json:"accessUrl"`
+	Ttl       []string `json:"ttl"`
 }

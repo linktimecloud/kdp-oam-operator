@@ -17,9 +17,15 @@ limitations under the License.
 package assembler
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	v1dto "kdp-oam-operator/pkg/apiserver/apis/v1/dto"
 	"kdp-oam-operator/pkg/apiserver/domain/entity"
 	pkgutils "kdp-oam-operator/pkg/utils"
+	"time"
 )
 
 func ConvertBigDataClusterEntityToDTO(entity *entity.BigDataClusterEntity) (*v1dto.BigDataClusterBase, error) {
@@ -112,15 +118,66 @@ func ConvertXDefinitionEntityToDTO(entity *entity.XDefinitionEntity) (*v1dto.XDe
 	return defBase, nil
 }
 
-func ConvertWebTerminalEntityToDTO(entity *entity.WebTerminalEntity) (*v1dto.TerminalBase, error) {
+func ConvertWebTerminalEntityToDTO(entity *unstructured.Unstructured) (*v1dto.TerminalBase, error) {
+	terminalTransformFileName := pkgutils.GetEnv("TERMINAL_TRANSORM_NAME", "/opt/terminal-config/terminalTransformData.json")
+	jsonFile, err := ioutil.ReadFile(terminalTransformFileName)
+	if err != nil {
+		fmt.Println(terminalTransformFileName, "Error reading JSON file:", err)
+		return nil, err
+	}
+
+	var rules v1dto.ExtractionRules
+	if err := json.Unmarshal(jsonFile, &rules); err != nil {
+		fmt.Println("Error parsing JSON:", err)
+		return nil, err
+	}
+	data, err := extractData(entity, rules)
+	if err != nil {
+		fmt.Println("Error extracting data:", err)
+		return nil, err
+	}
+
+	// Assembling urls
+	httpType := pkgutils.GetEnv("HTTPTYPE", "http")
+	DOMAIN := pkgutils.GetEnv("DOMAIN", "kdp-ux.kdp-e2e.io")
+	url := fmt.Sprintf("%s://%s%s", httpType, DOMAIN, data["accessUrl"].(string))
+
 	terBase := &v1dto.TerminalBase{
-		Name:       entity.Name,
-		NameSpace:  entity.NameSpace,
-		Phase:      entity.Phase,
-		AccessUrl:  entity.AccessUrl,
-		CreateTime: entity.CreateTime,
-		EndTime:    entity.EndTime,
-		Ttl:        entity.Ttl,
+		Name:       entity.GetName(),
+		NameSpace:  entity.GetNamespace(),
+		Phase:      data["phase"].(string),
+		AccessUrl:  url,
+		CreateTime: entity.GetCreationTimestamp(),
+		EndTime:    calculateEndTime(entity.GetCreationTimestamp(), data["ttl"].(int64)),
+		Ttl:        data["ttl"].(int64),
 	}
 	return terBase, nil
+}
+
+// calculateEndTime get end time
+func calculateEndTime(createTime metav1.Time, ttl int64) metav1.Time {
+	return metav1.NewTime(createTime.Add(time.Duration(ttl) * time.Second))
+}
+
+// extractData Extract the data according to the rules
+func extractData(obj *unstructured.Unstructured, rules v1dto.ExtractionRules) (map[string]interface{}, error) {
+	result := make(map[string]interface{})
+	// Iterate over the extraction rule
+	for key, path := range map[string][]string{
+		"phase":     rules.Phase,
+		"accessUrl": rules.AccessUrl,
+		"ttl":       rules.Ttl,
+	} {
+		// According to the path to access unstructured. Unstructured object
+		value, found, err := unstructured.NestedFieldNoCopy(obj.Object, path...)
+		if err != nil {
+			return nil, err
+		}
+		if !found {
+			return nil, fmt.Errorf("key '%s' not found", key)
+		}
+		result[key] = value
+	}
+
+	return result, nil
 }

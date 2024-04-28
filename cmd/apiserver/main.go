@@ -25,7 +25,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	cloudshell "github.com/cloudtty/cloudtty/pkg/apis/cloudshell/v1alpha1"
 	restfulspec "github.com/emicklei/go-restful-openapi/v2"
 	"github.com/go-openapi/spec"
 	oamcore "github.com/oam-dev/kubevela/apis/core.oam.dev"
@@ -47,7 +46,6 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(clients.Scheme))
 	_ = bdcv1alpha1.AddToScheme(clients.Scheme)
 	_ = oamcore.AddToScheme(clients.Scheme)
-	_ = cloudshell.AddToScheme(clients.Scheme)
 	// 添加自定义对象到scheme
 	//+kubebuilder:scaffold:scheme
 }
