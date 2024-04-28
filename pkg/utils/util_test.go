@@ -386,3 +386,43 @@ func TestGetEnv(t *testing.T) {
 		t.Errorf("GetEnv(\"NONEXISTENT_KEY\", \"fallback\") = %s; want fallback", nonexistentValue)
 	}
 }
+
+func TestStringToInt64(t *testing.T) {
+	t.Run("Valid string to int64 conversion", func(t *testing.T) {
+		str := "123"
+		expected := int64(123)
+		result := StringToInt64(str, 0)
+		if result != expected {
+			t.Errorf("Expected %d but got %d", expected, result)
+		}
+	})
+
+	t.Run("Invalid string to int64 conversion", func(t *testing.T) {
+		str := "invalid"
+		expected := int64(0)
+		result := StringToInt64(str, 0)
+		if result != expected {
+			t.Errorf("Expected %d but got %d", expected, result)
+		}
+	})
+}
+
+func TestStringToInt(t *testing.T) {
+	t.Run("Valid string to int conversion", func(t *testing.T) {
+		str := "123"
+		expected := 123
+		result := StringToInt(str, 0)
+		if result != expected {
+			t.Errorf("Expected %d but got %d", expected, result)
+		}
+	})
+
+	t.Run("Invalid string to int conversion", func(t *testing.T) {
+		str := "invalid"
+		expected := 0
+		result := StringToInt(str, 0)
+		if result != expected {
+			t.Errorf("Expected %d but got %d", expected, result)
+		}
+	})
+}
