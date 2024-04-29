@@ -126,6 +126,7 @@ apiserver:
        commandAction: {{ .CommandAction }}
        exposureMode: "Ingress"
        ttlSecondsAfterStarted: {{ .TtlSecondsAfterStarted }}
+       cleanup: true
        once: false
        ingressConfig:
          ingressName: cloudtty
