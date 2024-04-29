@@ -17,6 +17,7 @@ limitations under the License.
 package webservice
 
 import (
+	"fmt"
 	"kdp-oam-operator/pkg/apiserver/apis/v1/assembler"
 	v1dto "kdp-oam-operator/pkg/apiserver/apis/v1/dto"
 	"kdp-oam-operator/pkg/apiserver/exception"
@@ -39,6 +40,16 @@ func (c *BigDataClusterWebService) createPodTerminal(request *restful.Request, r
 		return
 	}
 	namespace := utils.GetEnv("NAMESPACE", "default")
+
+	// If the length is greater than 60, substitute is used ShortHashID
+	if len(TerminalName) > 60 {
+		TerminalNameShortHashID, err := utils.GenerateShortHashID(16, app.AppRuntimeNs, podName, containerName)
+		if err != nil {
+			exception.ReturnError(request, response, err)
+			return
+		}
+		TerminalName = fmt.Sprintf("%s-%s", TerminalNameShortHashID, containerName)
+	}
 
 	// create pod exec cloud shell  kubeConfigSecretName, TerminalName, TerminalNameSpace, podName, containerName
 	terminal, err := c.WebTerminalService.OpenTerminal(

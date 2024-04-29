@@ -426,3 +426,26 @@ func TestStringToInt(t *testing.T) {
 		}
 	})
 }
+
+func TestGenerateShortHashID(t *testing.T) {
+	tests := []struct {
+		length  int
+		values  []string
+		wantLen int
+	}{
+		{16, []string{"param1", "param2", "param3"}, 16},
+		{8, []string{"param4", "param5", "param6"}, 8},
+	}
+
+	for _, tt := range tests {
+		got, err := GenerateShortHashID(tt.length, tt.values...)
+		if err != nil {
+			t.Errorf("GenerateShortHashID(%d, %v) returned error: %v", tt.length, tt.values, err)
+			continue
+		}
+
+		if len(got) != tt.wantLen {
+			t.Errorf("GenerateShortHashID(%d, %v) = %s, want length %d", tt.length, tt.values, got, tt.wantLen)
+		}
+	}
+}

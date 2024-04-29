@@ -17,6 +17,8 @@ limitations under the License.
 package utils
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -148,4 +150,27 @@ func StringToInt(strValue string, fallback int) int {
 		return fallback
 	}
 	return intValue
+}
+
+// GenerateShortHashID generates a short hash ID of given length
+func GenerateShortHashID(length int, values ...string) (string, error) {
+	// 将所有参数连接成一个字符串
+	str := ""
+	for _, v := range values {
+		str += v
+	}
+
+	// 计算哈希值
+	hash := sha256.New()
+	hash.Write([]byte(str))
+	hashBytes := hash.Sum(nil)
+
+	// 转换为十六进制字符串
+	hashString := hex.EncodeToString(hashBytes)
+
+	// 截取所需长度的子字符串
+	if len(hashString) < length {
+		return "", fmt.Errorf("hash length is shorter than desired length")
+	}
+	return hashString[:length], nil
 }
