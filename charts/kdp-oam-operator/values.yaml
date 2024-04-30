@@ -125,7 +125,7 @@ apiserver:
           name: {{ .KubeConfigName }}
        commandAction: {{ .CommandAction }}
        exposureMode: "Ingress"
-       ttlSecondsAfterStarted: {{ .TtlSecondsAfterStarted }}
+       ttl: {{ .TtlSecondsAfterStarted }}
        cleanup: true
        once: false
        ingressConfig:
@@ -137,7 +137,7 @@ apiserver:
       {
         "phase": ["status", "phase"],
         "accessUrl": ["status", "accessUrl"],
-        "ttl": ["spec", "ttlSecondsAfterStarted"]
+        "ttl": ["spec", "ttl"]
       }
 
 ## @section kdp-oam-controller parameters
