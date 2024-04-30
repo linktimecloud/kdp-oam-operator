@@ -19,6 +19,8 @@ package utils
 import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"reflect"
 	"testing"
@@ -447,5 +449,64 @@ func TestGenerateShortHashID(t *testing.T) {
 		if len(got) != tt.wantLen {
 			t.Errorf("GenerateShortHashID(%d, %v) = %s, want length %d", tt.length, tt.values, got, tt.wantLen)
 		}
+	}
+}
+
+func TestGetStatusCode(t *testing.T) {
+	// 创建一个模拟的 HTTP 服务器
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	// 测试获取状态码
+	statusCode, err := GetStatusCode(server.URL)
+	if err != nil {
+		t.Errorf("GetStatusCode() returned error: %v", err)
+	}
+	if statusCode != http.StatusOK {
+		t.Errorf("GetStatusCode() returned unexpected status code: got %d, want %d", statusCode, http.StatusOK)
+	}
+}
+
+// TestGetStringValue 测试从 map[string]interface{} 中获取字符串值功能
+func TestGetStringValue(t *testing.T) {
+	// 创建测试数据
+	data := map[string]interface{}{
+		"key1": "value1",
+		"key2": 123, // 不是字符串类型
+	}
+
+	// 测试获取字符串值
+	value := GetStringValue(data, "key1")
+	if value != "value1" {
+		t.Errorf("GetStringValue() returned unexpected value: got %s, want %s", value, "value1")
+	}
+
+	// 测试获取非字符串值的情况
+	invalidValue := GetStringValue(data, "key2")
+	if invalidValue != "" {
+		t.Errorf("GetStringValue() returned unexpected value: got %s, want %s", invalidValue, "")
+	}
+}
+
+// TestGetInt64Value 测试从 map[string]interface{} 中获取 int64 值功能
+func TestGetInt64Value(t *testing.T) {
+	// 创建测试数据
+	data := map[string]interface{}{
+		"key1": "value1", // 不是 int64 类型
+		"key2": int64(123),
+	}
+
+	// 测试获取 int64 值
+	value := GetInt64Value(data, "key2")
+	if value != int64(123) {
+		t.Errorf("GetInt64Value() returned unexpected value: got %d, want %d", value, int64(123))
+	}
+
+	// 测试获取非 int64 值的情况
+	invalidValue := GetInt64Value(data, "key1")
+	if invalidValue != 0 {
+		t.Errorf("GetInt64Value() returned unexpected value: got %d, want %d", invalidValue, 0)
 	}
 }

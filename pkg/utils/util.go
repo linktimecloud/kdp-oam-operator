@@ -23,6 +23,7 @@ import (
 	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+	"net/http"
 	"os"
 	"strconv"
 )
@@ -173,4 +174,33 @@ func GenerateShortHashID(length int, values ...string) (string, error) {
 		return "", fmt.Errorf("hash length is shorter than desired length")
 	}
 	return hashString[:length], nil
+}
+
+// GetStatusCode HTTP GET and return status code
+func GetStatusCode(url string) (int, error) {
+	// 发送 HTTP GET 请求
+	resp, err := http.Get(url)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	// 返回响应状态码
+	return resp.StatusCode, nil
+}
+
+// GetStringValue get key value string from map[string]interface{}
+func GetStringValue(data map[string]interface{}, key string) string {
+	if value, ok := data[key].(string); ok {
+		return value
+	}
+	return ""
+}
+
+// GetInt64Value get key value int64 from map[string]interface{}
+func GetInt64Value(data map[string]interface{}, key string) int64 {
+	if value, ok := data[key].(int64); ok {
+		return value
+	}
+	return 0
 }

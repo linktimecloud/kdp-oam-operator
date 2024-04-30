@@ -81,8 +81,23 @@ func (c *BigDataClusterWebService) createGeneralTerminal(request *restful.Reques
 	terminal, err := c.WebTerminalService.OpenTerminal(
 		request.Request.Context(), kubeConfigSecretName, TerminalName, namespace, "", "", "")
 	if err != nil {
-		exception.ReturnError(request, response, err)
-		return
+		switch err.Error() {
+		case "ingressCheckFailed":
+			exception.ReturnError(request, response, exception.ErrIngressCheckFailed)
+			return
+		case "createTerminalFailed":
+			exception.ReturnError(request, response, exception.ErrCreateTerminalFailed)
+			return
+		case "terminalNotFound":
+			exception.ReturnError(request, response, exception.ErrTerminalNotFound)
+			return
+		case "obtainLimitRetry":
+			exception.ReturnError(request, response, exception.ErrObtainLimitTry)
+			return
+		default:
+			exception.ReturnError(request, response, err)
+			return
+		}
 	}
 
 	TerminalBase, err := assembler.ConvertWebTerminalEntityToDTO(terminal)
