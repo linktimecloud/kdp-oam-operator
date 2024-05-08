@@ -229,7 +229,7 @@ func TestGetIngressTimeout(t *testing.T) {
 }
 
 func TestGetProxyHost(t *testing.T) {
-	const defaultProxyHost = "0"
+	const defaultProxyHost = "127.0.0.1"
 	const testProxyHost = "proxy.example.com"
 
 	t.Run("Default Value", func(t *testing.T) {
