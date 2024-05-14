@@ -227,28 +227,3 @@ func TestGetIngressTimeout(t *testing.T) {
 		}
 	})
 }
-
-func TestGetProxyHost(t *testing.T) {
-	const defaultProxyHost = "127.0.0.1"
-	const testProxyHost = "proxy.example.com"
-
-	t.Run("Default Value", func(t *testing.T) {
-		os.Unsetenv("KONG_KONG_PROXY_SERVICE_HOST")
-		defer os.Unsetenv("KONG_KONG_PROXY_SERVICE_HOST")
-
-		got := GetProxyHost()
-		if got != defaultProxyHost {
-			t.Errorf("GetProxyHost() = %v; want %v", got, defaultProxyHost)
-		}
-	})
-
-	t.Run("Environment Override", func(t *testing.T) {
-		os.Setenv("KONG_KONG_PROXY_SERVICE_HOST", testProxyHost)
-		defer os.Unsetenv("KONG_KONG_PROXY_SERVICE_HOST")
-
-		got := GetProxyHost()
-		if got != testProxyHost {
-			t.Errorf("GetProxyHost() = %v; want %v", got, testProxyHost)
-		}
-	})
-}

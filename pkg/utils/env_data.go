@@ -35,11 +35,3 @@ func GetMaxTry() string {
 func GetIngressTimeout() string {
 	return GetEnv("INGRESSTIMEOUT", "0")
 }
-
-func GetProxyKey() string {
-	return GetEnv("PROXY_KEY", "KONG_KONG_PROXY_SERVICE_HOST")
-}
-
-func GetProxyHost() string {
-	return GetEnv(GetProxyKey(), "127.0.0.1")
-}

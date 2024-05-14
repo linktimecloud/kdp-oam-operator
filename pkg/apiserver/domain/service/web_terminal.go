@@ -6,17 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	networkingv1 "k8s.io/api/networking/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
 	v1dto "kdp-oam-operator/pkg/apiserver/apis/v1/dto"
 	"kdp-oam-operator/pkg/apiserver/infrastructure/clients"
 	"kdp-oam-operator/pkg/utils"
 	"kdp-oam-operator/pkg/utils/log"
-	"net"
-	"net/http"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
@@ -168,92 +163,6 @@ func (w webTerminalServiceImpl) CheckTerminal(ctx context.Context, TerminalName,
 	return errors.New("terminal is exists")
 }
 
-func (w webTerminalServiceImpl) CheckTerminalService(ctx context.Context, TerminalNameSpace, ingressName, TerminalIngress string) error {
-	ingress := &networkingv1.Ingress{}
-	objectKey := types.NamespacedName{Name: ingressName, Namespace: TerminalNameSpace}
-	err := w.KubeClient.Get(ctx, objectKey, ingress)
-	if err != nil && !apierrors.IsNotFound(err) {
-		return err
-	}
-	// Define check counter
-	checkCount := 0
-	MaxTry := utils.StringToInt(utils.GetMaxTry(), 10)
-	for _, ingressPath := range ingress.Spec.Rules[0].HTTP.Paths {
-		path := ingressPath.Path
-		if path == TerminalIngress {
-			serviceUrl := fmt.Sprintf("http://%s:%d", ingressPath.Backend.Service.Name, ingressPath.Backend.Service.Port.Number)
-
-			// check service response status code
-			for {
-				statusCode, err := utils.GetStatusCode(serviceUrl)
-				if err != nil {
-					log.Logger.Debugf(fmt.Sprintf("get terminal url status err: %s", err.Error()))
-					continue
-				}
-				log.Logger.Debugf(fmt.Sprintf("[%d/10] check terminal url:%s response status:%d", checkCount, serviceUrl, statusCode))
-				if statusCode == http.StatusOK {
-					log.Logger.Infof(fmt.Sprintf("[%d/10] check terminal url:%s response status:%d", checkCount, serviceUrl, statusCode))
-					return nil
-				}
-				if checkCount > MaxTry {
-					log.Logger.Errorf(fmt.Sprintf("check terminal url:%s response status obtain limit retry", serviceUrl))
-					return errors.New("obtainLimitRetry")
-				}
-				checkCount++
-				time.Sleep(1 * time.Second)
-			}
-		}
-	}
-	return nil
-}
-
-func (w webTerminalServiceImpl) CheckTerminalIngress(TerminalUrl string) error {
-	proxyPort := 80
-	if utils.GetHTTPType() == "https" {
-		proxyPort = 443
-	}
-
-	proxyAddr := fmt.Sprintf("%s:%d", utils.GetProxyHost(), proxyPort)
-	sourceAddr := fmt.Sprintf("%s:%d", utils.GetDOMAIN(), proxyPort)
-	// custom http client
-	customClient := &http.Client{
-		Transport: &http.Transport{
-			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				if addr == sourceAddr {
-					addr = proxyAddr
-				}
-				dialer := net.Dialer{}
-				return dialer.DialContext(ctx, network, addr)
-			},
-		},
-	}
-	checkCount := 1
-	MaxTry := utils.StringToInt(utils.GetMaxTry(), 10)
-	for {
-		// send  GET request
-		resp, err := customClient.Get(TerminalUrl)
-		if err != nil {
-			log.Logger.Warnf("Error fetching the URL: %s", err)
-		} else {
-			// get http status code
-			statusCode := resp.StatusCode
-			log.Logger.Debugf("check ingress url:%s response code:%d", TerminalUrl, statusCode)
-			resp.Body.Close()
-			if statusCode == http.StatusOK {
-				log.Logger.Infof("check ingress url:%s response code:%d", TerminalUrl, statusCode)
-				return nil
-			}
-		}
-
-		if checkCount > MaxTry {
-			log.Logger.Errorf("check ingress url:%s response code obtain limit retry", TerminalUrl)
-			return errors.New("obtainLimitRetry")
-		}
-		time.Sleep(1 * time.Second)
-		checkCount++
-	}
-}
-
 func (w webTerminalServiceImpl) OpenTerminal(ctx context.Context, kubeConfigSecretName, TerminalName, TerminalNameSpace, podNameSpace, podName, containerName string) (*unstructured.Unstructured, error) {
 	//check terminal
 	err := w.CheckTerminal(ctx, TerminalName, TerminalNameSpace)
@@ -278,19 +187,6 @@ func (w webTerminalServiceImpl) OpenTerminal(ctx context.Context, kubeConfigSecr
 
 	// get terminal
 	terminal, err := w.GetExecTerminal(ctx, TerminalName, TerminalNameSpace, 0)
-	if err != nil {
-		return nil, err
-	}
-
-	accessUrl, _, _, err := GetTerminalData(terminal)
-	if err != nil {
-		log.Logger.Errorf(fmt.Sprintf("get terminal url by response err: %s", err.Error()))
-		return nil, err
-	}
-
-	terminalUrl := GetTerminalUrl(accessUrl)
-	// check ingress url response status code
-	err = w.CheckTerminalIngress(terminalUrl)
 	if err != nil {
 		return nil, err
 	}
