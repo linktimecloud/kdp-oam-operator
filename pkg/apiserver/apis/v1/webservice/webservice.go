@@ -54,9 +54,10 @@ func Init() {
 	contextSecretService := service.NewContextSecretService()
 	contextSettingService := service.NewContextSettingService()
 	xDefinitionService := service.NewXDefinitionService()
+	webTerminalService := service.NewWebTerminalService()
 
 	// register webservice
 	RegisterWebService(NewBigDataClusterWebService(bigDataClusterService, applicationService,
-		applicationResourcesService, contextSecretService, contextSettingService, xDefinitionService))
+		applicationResourcesService, contextSecretService, contextSettingService, xDefinitionService, webTerminalService))
 	RegisterWebService(NewProbeService())
 }

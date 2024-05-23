@@ -17,9 +17,15 @@ limitations under the License.
 package utils
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
+	"net/http"
+	"os"
+	"strconv"
 )
 
 type labelAnnotationObject interface {
@@ -115,4 +121,86 @@ func RemoveFinalizer(o metav1.Object, finalizer string) {
 		}
 	}
 	o.SetFinalizers(f)
+}
+
+// GetEnv from env get data
+func GetEnv(key, fallback string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+	return value
+}
+
+// StringToInt64 Convert the string value to an int64
+func StringToInt64(strValue string, fallback int64) int64 {
+	intValue, err := strconv.ParseInt(strValue, 10, 64)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return fallback
+	}
+	int64Value := int64(intValue)
+	return int64Value
+}
+
+// StringToInt Convert the string value to an int
+func StringToInt(strValue string, fallback int) int {
+	intValue, err := strconv.Atoi(strValue)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return fallback
+	}
+	return intValue
+}
+
+// GenerateShortHashID generates a short hash ID of given length
+func GenerateShortHashID(length int, values ...string) (string, error) {
+	// 将所有参数连接成一个字符串
+	str := ""
+	for _, v := range values {
+		str += v
+	}
+
+	// 计算哈希值
+	hash := sha256.New()
+	hash.Write([]byte(str))
+	hashBytes := hash.Sum(nil)
+
+	// 转换为十六进制字符串
+	hashString := hex.EncodeToString(hashBytes)
+
+	// 截取所需长度的子字符串
+	if len(hashString) < length {
+		return "", fmt.Errorf("hash length is shorter than desired length")
+	}
+	return hashString[:length], nil
+}
+
+// GetStatusCode HTTP GET and return status code
+func GetStatusCode(url string) (int, error) {
+	// 发送 HTTP GET 请求
+	resp, err := http.Get(url)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	// 返回响应状态码
+	return resp.StatusCode, nil
+}
+
+// GetStringValue get key value string from map[string]interface{}
+func GetStringValue(data map[string]interface{}, key string) string {
+	if value, ok := data[key].(string); ok {
+		return value
+	}
+	return ""
+}
+
+// GetInt64Value get key value int64 from map[string]interface{}
+func GetInt64Value(data map[string]interface{}, key string) int64 {
+	if value, ok := data[key].(int64); ok {
+		return value
+	}
+	return 0
 }

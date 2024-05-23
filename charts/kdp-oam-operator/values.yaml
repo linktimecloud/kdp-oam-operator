@@ -89,6 +89,9 @@ affinity: {}
 ## @param apiserver.serviceAccount.create Specifies whether a service account should be created
 ## @param apiserver.serviceAccount.annotations Annotations to add to the service account
 ## @param apiserver.serviceAccount.name The name of the service account to use.
+## @skip apiserver.configs.terminalTransformTemplate Data conversion template
+## @skip apiserver.configs.terminalTemplate Create cloud shell template data
+
 apiserver:
   enabled: true
   replicaCount: 1
@@ -109,6 +112,33 @@ apiserver:
     # The name of the service account to use.
     # If not set and create is true, a name is generated using the fullname template
     name: kdp-oam-apiserver-sa
+  configs:
+    # Create cloud shell template data
+    terminalTemplate: |
+      apiVersion: cloudshell.cloudtty.io/v1alpha1
+      kind: CloudShell
+      metadata:
+        name: {{ .TerminalName }}
+        namespace: {{ .TerminalNameSpace }}
+      spec:
+       secretRef:
+          name: {{ .KubeConfigName }}
+       commandAction: {{ .CommandAction }}
+       exposureMode: "Ingress"
+       ttl: {{ .TtlSecondsAfterStarted }}
+       cleanup: true
+       once: false
+       ingressConfig:
+         ingressName: cloudtty
+         namespace: {{ .TerminalNameSpace }}
+         ingressClassName: kong
+    # Data conversion template
+    terminalTransformTemplate: |-
+      {
+        "phase": ["status", "phase"],
+        "accessUrl": ["status", "accessUrl"],
+        "ttl": ["spec", "ttl"]
+      }
 
 ## @section kdp-oam-controller parameters
 ## @param controller.replicaCount Number of replicas for the controller

@@ -28,6 +28,22 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
+      {{- with .Values.apiserver.configs}}
+      volumes:
+        - name: oam-terminal-config
+          configMap:
+            name: oam-apiserver-terminal-config
+            items:
+              {{- with .terminalTemplate}}
+              - key: terminalTemplate.yaml
+                path: terminalTemplate.yaml
+              {{- end }}
+              {{- with .terminalTransformTemplate}}
+              - key: terminalTransformData.json
+                path: terminalTransformData.json
+              {{- end }}
+      {{- end}}
       containers:
         - name: apiserver
           {{- with .Values.securityContext }}
@@ -64,6 +80,12 @@ spec:
           {{- with .Values.apiserver.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          {{- with .Values.apiserver.configs.terminalTemplate }}
+          volumeMounts:
+            - name: oam-terminal-config
+              mountPath: /opt/terminal-config
           {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

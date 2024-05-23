@@ -17,9 +17,14 @@ limitations under the License.
 package assembler
 
 import (
+	"fmt"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	v1dto "kdp-oam-operator/pkg/apiserver/apis/v1/dto"
 	"kdp-oam-operator/pkg/apiserver/domain/entity"
+	"kdp-oam-operator/pkg/apiserver/domain/service"
 	pkgutils "kdp-oam-operator/pkg/utils"
+	"time"
 )
 
 func ConvertBigDataClusterEntityToDTO(entity *entity.BigDataClusterEntity) (*v1dto.BigDataClusterBase, error) {
@@ -110,4 +115,41 @@ func ConvertXDefinitionEntityToDTO(entity *entity.XDefinitionEntity) (*v1dto.XDe
 	defBase.JSONSchema = pkgutils.StringToMap(entity.JSONSchema)
 	defBase.UISchema = pkgutils.StringToMap(entity.UISchema)
 	return defBase, nil
+}
+
+func ConvertWebTerminalEntityToDTO(entity *unstructured.Unstructured) (*v1dto.TerminalBase, error) {
+	rules, err := service.ParseExtractionRules()
+	if err != nil {
+		fmt.Println("parse transform file data err:", err)
+		return nil, err
+	}
+
+	data, err := service.ExtractData(entity, rules)
+	if err != nil {
+		fmt.Println("Error extracting data:", err)
+		return nil, err
+	}
+
+	accessUrl, phase, ttl, err := service.GetTerminalData(entity)
+	if err != nil {
+		fmt.Println("get terminal url by response err: ", err.Error())
+		return nil, err
+	}
+	terminalUrl := service.GetTerminalUrl(accessUrl)
+
+	terBase := &v1dto.TerminalBase{
+		Name:       entity.GetName(),
+		NameSpace:  entity.GetNamespace(),
+		Phase:      phase,
+		AccessUrl:  terminalUrl,
+		CreateTime: entity.GetCreationTimestamp(),
+		EndTime:    calculateEndTime(entity.GetCreationTimestamp(), data["ttl"].(int64)),
+		Ttl:        ttl,
+	}
+	return terBase, nil
+}
+
+// calculateEndTime get end time
+func calculateEndTime(createTime metav1.Time, ttl int64) metav1.Time {
+	return metav1.NewTime(createTime.Add(time.Duration(ttl) * time.Second))
 }

@@ -22,4 +22,6 @@ const (
 	kindContextSecret        = "ContextSecret"
 	kindContextSetting       = "ContextSetting"
 	kindBigDataCluster       = "BigDataCluster"
+	kindTerminal             = "CloudShell"
+	kindTerminalApiVersion   = "cloudshell.cloudtty.io/v1alpha1"
 )

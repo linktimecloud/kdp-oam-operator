@@ -19,6 +19,9 @@ package utils
 import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -366,5 +369,144 @@ func TestRemoveFinalizer(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			RemoveFinalizer(tt.args.o, tt.args.finalizer)
 		})
+	}
+}
+
+func TestGetEnv(t *testing.T) {
+	// 设置环境变量
+	os.Setenv("EXISTING_KEY", "existing_value")
+
+	// 测试存在的键
+	existingValue := GetEnv("EXISTING_KEY", "fallback")
+	if existingValue != "existing_value" {
+		t.Errorf("GetEnv(\"EXISTING_KEY\", \"fallback\") = %s; want existing_value", existingValue)
+	}
+
+	// 测试不存在的键
+	nonexistentValue := GetEnv("NONEXISTENT_KEY", "fallback")
+	if nonexistentValue != "fallback" {
+		t.Errorf("GetEnv(\"NONEXISTENT_KEY\", \"fallback\") = %s; want fallback", nonexistentValue)
+	}
+}
+
+func TestStringToInt64(t *testing.T) {
+	t.Run("Valid string to int64 conversion", func(t *testing.T) {
+		str := "123"
+		expected := int64(123)
+		result := StringToInt64(str, 0)
+		if result != expected {
+			t.Errorf("Expected %d but got %d", expected, result)
+		}
+	})
+
+	t.Run("Invalid string to int64 conversion", func(t *testing.T) {
+		str := "invalid"
+		expected := int64(0)
+		result := StringToInt64(str, 0)
+		if result != expected {
+			t.Errorf("Expected %d but got %d", expected, result)
+		}
+	})
+}
+
+func TestStringToInt(t *testing.T) {
+	t.Run("Valid string to int conversion", func(t *testing.T) {
+		str := "123"
+		expected := 123
+		result := StringToInt(str, 0)
+		if result != expected {
+			t.Errorf("Expected %d but got %d", expected, result)
+		}
+	})
+
+	t.Run("Invalid string to int conversion", func(t *testing.T) {
+		str := "invalid"
+		expected := 0
+		result := StringToInt(str, 0)
+		if result != expected {
+			t.Errorf("Expected %d but got %d", expected, result)
+		}
+	})
+}
+
+func TestGenerateShortHashID(t *testing.T) {
+	tests := []struct {
+		length  int
+		values  []string
+		wantLen int
+	}{
+		{16, []string{"param1", "param2", "param3"}, 16},
+		{8, []string{"param4", "param5", "param6"}, 8},
+	}
+
+	for _, tt := range tests {
+		got, err := GenerateShortHashID(tt.length, tt.values...)
+		if err != nil {
+			t.Errorf("GenerateShortHashID(%d, %v) returned error: %v", tt.length, tt.values, err)
+			continue
+		}
+
+		if len(got) != tt.wantLen {
+			t.Errorf("GenerateShortHashID(%d, %v) = %s, want length %d", tt.length, tt.values, got, tt.wantLen)
+		}
+	}
+}
+
+func TestGetStatusCode(t *testing.T) {
+	// 创建一个模拟的 HTTP 服务器
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	// 测试获取状态码
+	statusCode, err := GetStatusCode(server.URL)
+	if err != nil {
+		t.Errorf("GetStatusCode() returned error: %v", err)
+	}
+	if statusCode != http.StatusOK {
+		t.Errorf("GetStatusCode() returned unexpected status code: got %d, want %d", statusCode, http.StatusOK)
+	}
+}
+
+// TestGetStringValue 测试从 map[string]interface{} 中获取字符串值功能
+func TestGetStringValue(t *testing.T) {
+	// 创建测试数据
+	data := map[string]interface{}{
+		"key1": "value1",
+		"key2": 123, // 不是字符串类型
+	}
+
+	// 测试获取字符串值
+	value := GetStringValue(data, "key1")
+	if value != "value1" {
+		t.Errorf("GetStringValue() returned unexpected value: got %s, want %s", value, "value1")
+	}
+
+	// 测试获取非字符串值的情况
+	invalidValue := GetStringValue(data, "key2")
+	if invalidValue != "" {
+		t.Errorf("GetStringValue() returned unexpected value: got %s, want %s", invalidValue, "")
+	}
+}
+
+// TestGetInt64Value 测试从 map[string]interface{} 中获取 int64 值功能
+func TestGetInt64Value(t *testing.T) {
+	// 创建测试数据
+	data := map[string]interface{}{
+		"key1": "value1", // 不是 int64 类型
+		"key2": int64(123),
+	}
+
+	// 测试获取 int64 值
+	value := GetInt64Value(data, "key2")
+	if value != int64(123) {
+		t.Errorf("GetInt64Value() returned unexpected value: got %d, want %d", value, int64(123))
+	}
+
+	// 测试获取非 int64 值的情况
+	invalidValue := GetInt64Value(data, "key1")
+	if invalidValue != 0 {
+		t.Errorf("GetInt64Value() returned unexpected value: got %d, want %d", invalidValue, 0)
 	}
 }
