@@ -82,19 +82,21 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	if err := r.Get(ctx, client.ObjectKey{Name: contextSecret.GetAnnotations()[constants.AnnotationBDCName]}, &bigDataCluster); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	contextSecret.SetOwnerReferences([]metav1.OwnerReference{
-		{
-			APIVersion:         bigDataCluster.APIVersion,
-			Kind:               bigDataCluster.Kind,
-			Name:               bigDataCluster.Name,
-			UID:                bigDataCluster.UID,
-			Controller:         pointer.Bool(true),
-			BlockOwnerDeletion: pointer.Bool(true),
-		},
-	})
-	err := r.patchOwnerReferencer(ctx, &contextSecret)
-	if err != nil {
-		return ctrl.Result{}, err
+	if contextSecret.GetOwnerReferences() == nil {
+		contextSecret.SetOwnerReferences([]metav1.OwnerReference{
+			{
+				APIVersion:         bigDataCluster.APIVersion,
+				Kind:               bigDataCluster.Kind,
+				Name:               bigDataCluster.Name,
+				UID:                bigDataCluster.UID,
+				Controller:         pointer.Bool(true),
+				BlockOwnerDeletion: pointer.Bool(true),
+			},
+		})
+		err := r.patchOwnerReferencer(ctx, &contextSecret)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	// Replace template.parameter with BigDataCluster Object spec
