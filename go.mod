@@ -32,7 +32,7 @@ require (
 require (
 	github.com/briandowns/spinner v1.23.0
 	github.com/emicklei/go-restful/v3 v3.10.2
-	github.com/evanphx/json-patch v5.6.0+incompatible
+	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/fatih/color v1.15.0
 	github.com/google/go-cmp v0.5.9
 	github.com/gosuri/uitable v0.0.4
