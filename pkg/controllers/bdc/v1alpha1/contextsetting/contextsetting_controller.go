@@ -68,7 +68,7 @@ type options struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.1/pkg/reconcile
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	klog.InfoS("Reconcile context-secret", "", klog.KRef(req.Namespace, req.Name))
+	klog.InfoS("Reconcile context-setting", "", klog.KRef(req.Namespace, req.Name))
 
 	// Lookup the contextSetting instance for this reconcile request
 	var contextSetting bdcv1alpha1.ContextSetting
@@ -90,19 +90,21 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	if err := r.Get(ctx, client.ObjectKey{Name: contextSetting.GetAnnotations()[constants.AnnotationBDCName]}, &bigDataCluster); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	contextSetting.SetOwnerReferences([]metav1.OwnerReference{
-		{
-			APIVersion:         bigDataCluster.APIVersion,
-			Kind:               bigDataCluster.Kind,
-			Name:               bigDataCluster.Name,
-			UID:                bigDataCluster.UID,
-			Controller:         pointer.Bool(true),
-			BlockOwnerDeletion: pointer.Bool(true),
-		},
-	})
-	err := r.patchOwnerReferencer(ctx, &contextSetting)
-	if err != nil {
-		return ctrl.Result{}, err
+	if contextSetting.GetOwnerReferences() == nil {
+		contextSetting.SetOwnerReferences([]metav1.OwnerReference{
+			{
+				APIVersion:         bigDataCluster.APIVersion,
+				Kind:               bigDataCluster.Kind,
+				Name:               bigDataCluster.Name,
+				UID:                bigDataCluster.UID,
+				Controller:         pointer.Bool(true),
+				BlockOwnerDeletion: pointer.Bool(true),
+			},
+		})
+		err := r.patchOwnerReferencer(ctx, &contextSetting)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	// Replace template.parameter with BigDataCluster Object spec
