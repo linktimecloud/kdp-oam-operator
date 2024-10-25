@@ -24,7 +24,7 @@ parse本质上是服务模型CRD使用template的适配器，通过kdp-oam-opera
 ### 1.2.1. XDefinition controller
 一般K8s operator会通过代码流程将CRD所需生成的K8s资源预编写好，用户创建CR后controller根据预定义好的K8S资源进行组件部署或更新完成组件生命周期管理。但是这种模式无法适配大数据场景庞大的组件生态，每个大数据服务实现一个K8S operator的开发周期太长，而且不能兼容开源通过其他方式(比如helm)提供的服务。XDefinition关键是实现一个高扩展性的可编程模版作为所有KDP模型的底座，为不同大数据服务提供自主封装、灵活配置的能力。
 
-XDefinition中`spec.apuResource`定义资源类型，而`spec.schematic.cue`则是资源模板定义通过cue实现。XDefinition模版CR注册后XDefinition controller会检查cue parameter自动转换成json schema与ui schema并生成ConfigMap进行记录。
+XDefinition中`spec.apiResource`定义资源类型，而`spec.schematic.cue`则是资源模板定义通过cue实现。XDefinition模版CR注册后XDefinition controller会检查cue parameter自动转换成json schema与ui schema并生成ConfigMap进行记录。
 
 其他KDP CRD controller都会将最终用户部署的CR资源与XDefinition模板进行匹配然后生成模板中定义的K8S资源。
 

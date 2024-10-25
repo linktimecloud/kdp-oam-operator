@@ -88,7 +88,7 @@ spec:
 
 # 核心概念
 ## 系统架构
-kdp oam operator通过项目提供的helm chart部署，会创建KDP大数据模型抽象的CRD、operator负载、operator关键配置，kdp oam operator部署后会将默认提供的大数据服务通过XDefinition进行注册。最终用户通过KDP web ui(高级用户可以通过kubectl命令行)创建Application CR，kdp oam operator通过监听application event结合XDefinition模板最终创建出大数据服务所需的各类资源工最终用户使用。
+kdp oam operator通过项目提供的helm chart部署，会创建KDP大数据模型抽象的CRD、operator负载、operator关键配置，kdp oam operator部署后会将默认提供的大数据服务通过XDefinition进行注册。最终用户通过KDP web ui(高级用户可以通过kubectl命令行)创建Application CR，kdp oam operator通过监听application event结合XDefinition模板最终创建出大数据服务所需的各类资源供最终用户使用。
 ![deployment-architecture.png](resources/deployment-architecture.png)
 
 ## 模型定义与实现
@@ -492,7 +492,7 @@ spec:
       type: hbase
   dynamicParameterMeta:
     - description: hdfs config context name
-      name: dependencies.hdfs.config           # 对应spec.cue.template.paramter参数
+      name: dependencies.hdfs.config           # 对应spec.cue.template.parameter参数
       refKey: ''                               # 为空拿表示需要直接作为文件挂载，不为空时依赖配置文件中的指定key
       refType: hdfs                            # 依赖组件类型，对应是依赖组件XDefinition模板定义中的spec.apiResource.definition.type
       required: true
