@@ -1,11 +1,12 @@
 module kdp-oam-operator
 
 go 1.19
+toolchain go1.24.1
 
 require (
 	cuelang.org/go v0.6.0
 	github.com/emicklei/go-restful-openapi/v2 v2.9.1
-	github.com/getkin/kin-openapi v0.118.0
+	github.com/getkin/kin-openapi v0.131.0
 	github.com/go-openapi/spec v0.20.7
 	github.com/go-playground/validator/v10 v10.19.0
 	github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
@@ -127,9 +128,9 @@ require (
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.2.4 // indirect
-	github.com/go-openapi/jsonpointer v0.19.5 // indirect
+	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
-	github.com/go-openapi/swag v0.22.3 // indirect
+	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
@@ -162,7 +163,6 @@ require (
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/invopop/yaml v0.2.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
@@ -205,6 +205,8 @@ require (
 	github.com/oam-dev/cluster-register v1.0.4-0.20230424040021-147f7c1fefe5 // indirect
 	github.com/oam-dev/terraform-config-inspect v0.0.0-20210418082552-fc72d929aa28 // indirect
 	github.com/oam-dev/terraform-controller v0.8.0 // indirect
+	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
+	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc3 // indirect
 	github.com/openkruise/kruise-api v1.4.0 // indirect
